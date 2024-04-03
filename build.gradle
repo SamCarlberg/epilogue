@@ -1,0 +1,56 @@
+buildscript {
+  repositories {
+    maven {
+      url = 'https://frcmaven.wpi.edu/artifactory/ex-mvn'
+    }
+  }
+}
+
+plugins {
+  id 'java-library'
+  id 'maven-publish'
+  id 'edu.wpi.first.GradleRIO' version '2024.2.1'
+  id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
+}
+
+repositories {
+  mavenCentral()
+}
+if (project.hasProperty('releaseMode')) {
+  wpilibRepositories.addAllReleaseRepositories(project)
+} else {
+  wpilibRepositories.addAllDevelopmentRepositories(project)
+}
+
+java {
+  sourceCompatibility = JavaVersion.VERSION_21
+  targetCompatibility = JavaVersion.VERSION_21
+}
+
+dependencies {
+  api wpi.java.deps.wpilib()
+  api 'edu.wpi.first.wpilibNewCommands:wpilibNewCommands-java:+'
+
+  implementation 'com.google.auto.service:auto-service:1.1.1'
+  annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
+  testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+  testImplementation 'com.google.testing.compile:compile-testing:+'
+}
+
+test {
+  useJUnitPlatform()
+  systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
+}
+
+publishing {
+  publications {
+    maven(MavenPublication) {
+      groupId = 'dev.slfc.epilogue'
+      artifactId = 'epilogue'
+      version = '0.1.0'
+
+      from components.java
+    }
+  }
+}
