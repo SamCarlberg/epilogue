@@ -1,13 +1,19 @@
 package dev.slfc.epilogue.processor;
 
+import static java.util.stream.Collectors.*;
+
 import com.google.auto.service.AutoService;
 import dev.slfc.epilogue.Epilogue;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.FilerException;
 import javax.annotation.processing.Processor;
@@ -42,7 +48,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     Predicate<Element> notSkipped = (e) -> {
       var epilogue = e.getAnnotation(Epilogue.class);
       // Skipping must be done through the annotation, so no annotation means it's not skipped
-      return epilogue == null || !epilogue.skip();
+      return epilogue == null || epilogue.importance() != Epilogue.DataImportance.NONE;
     };
 
     for (TypeElement annotation : annotations) {
@@ -80,7 +86,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
         try {
           String loggedClassName = clazz.getQualifiedName().toString();
-          writeLoggerFile(loggedClassName, fieldsToLog, methodsToLog);
+          writeLoggerFile(loggedClassName, epilogue, fieldsToLog, methodsToLog);
 
           if (processingEnv.getTypeUtils().isAssignable(clazz.getSuperclass(), robotBaseClass)) {
             mainRobotClass = clazz;
@@ -161,9 +167,18 @@ public class AnnotationProcessor extends AbstractProcessor {
               public static void configure(java.util.function.Consumer<EpilogueConfiguration> configurator) {
                 configurator.accept(config);
               }
-              
+
               public static EpilogueConfiguration getConfig() {
                 return config;
+              }
+            """);
+
+        out.println("""
+              /**
+               * Checks if data associated with a given importance level should be logged.
+               */
+              public static boolean shouldLog(Epilogue.DataImportance importance) {
+                return importance.compareTo(config.minimumImportance) >= 0;
               }
             """);
 
@@ -216,6 +231,7 @@ public class AnnotationProcessor extends AbstractProcessor {
 
   private void writeLoggerFile(
       String className,
+      Epilogue classConfig,
       List<VariableElement> loggableFields,
       List<ExecutableElement> loggableMethods) throws IOException {
     String packageName = null;
@@ -240,6 +256,8 @@ public class AnnotationProcessor extends AbstractProcessor {
         out.println();
       }
 
+      out.println("import dev.slfc.epilogue.Epilogue;");
+      out.println("import dev.slfc.epilogue.Epiloguer;");
       out.println("import dev.slfc.epilogue.logging.DataLogger;");
       out.println("import dev.slfc.epilogue.logging.ClassSpecificLogger;");
       out.println("import java.lang.invoke.VarHandle;");
@@ -295,13 +313,36 @@ public class AnnotationProcessor extends AbstractProcessor {
       // }
       out.println("    try {");
 
-      for (var loggableField : loggableFields) {
-        logField(out, loggableField);
-      }
+      // Build a map of importance levels to the fields logged at those levels
+      // e.g. { DEBUG: [fieldA, fieldB], INFO: [fieldC], CRITICAL: [fieldD, fieldE, fieldF] }
+      var loggedElementsByImportance =
+          Stream
+              .concat(loggableFields.stream(), loggableMethods.stream())
+              .collect(groupingBy(
+                  element -> {
+                    var config = element.getAnnotation(Epilogue.class);
+                    if (config == null) {
+                      // No configuration on this element, fall back to the class-level configuration
+                      return classConfig.importance();
+                    } else {
+                      return config.importance();
+                    }
+                  },
+                  () -> new EnumMap<>(Epilogue.DataImportance.class), // EnumMap for consistent ordering
+                  toList())
+              );
 
-      for (var loggableMethod : loggableMethods) {
-        logMethod(out, loggableMethod);
-      }
+      loggedElementsByImportance.forEach((importance, elements) -> {
+        out.println("      if (Epiloguer.shouldLog(Epilogue.DataImportance." + importance.name() + ")) {");
+        for (var loggableElement : elements) {
+          switch (loggableElement) {
+            case VariableElement field -> logField(out, field);
+            case ExecutableElement method -> logMethod(out, method);
+            default -> {} // Ignore
+          }
+        }
+        out.println("      }");
+      });
 
       out.println("    } catch (Exception e) {");
       out.println("      System.err.println(\"[EPILOGUE] Encountered an error while logging: \" + e.getMessage());");
@@ -475,13 +516,13 @@ public class AnnotationProcessor extends AbstractProcessor {
         !processingEnv.getTypeUtils().isAssignable(dataType, subsystemType)
     ) {
       // Log as sendable
-      out.println("      logSendable(dataLogger, identifier + \"/" + loggedName + "\", " + access + ");");
+      out.println("        logSendable(dataLogger, identifier + \"/" + loggedName + "\", " + access + ");");
     } else if (reflectedType != null && reflectedType.getAnnotation(Epilogue.class) != null) {
       // Log nested fields that support Epilogue
-      out.println("      dev.slfc.epilogue.Epiloguer." + lowerCamelCase(simpleName(reflectedType.getQualifiedName().toString())) + "Logger.update(dataLogger, identifier + \"/" + loggedName + "\", " + access + ");");
+      out.println("        Epiloguer." + lowerCamelCase(simpleName(reflectedType.getQualifiedName().toString())) + "Logger.update(dataLogger, identifier + \"/" + loggedName + "\", " + access + ");");
     } else if (hasStructDeclaration(reflectedType)) {
       // Log with struct serialization
-      out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ", " + reflectedType.getQualifiedName() + ".struct);");
+      out.println("        dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ", " + reflectedType.getQualifiedName() + ".struct);");
     } else if (dataType.getKind() == TypeKind.ARRAY) {
       // Invoke with information about the array type
       // This takes advantage of the fact that the array log calls have EXACTLY the same shape as
@@ -490,19 +531,19 @@ public class AnnotationProcessor extends AbstractProcessor {
       var componentType = ((ArrayType) dataType).getComponentType();
       loggerCall(out, componentType, codeName, loggedName, access);
     } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getTypeUtils().erasure(listType))) {
-      out.println("      // TODO: Log " + loggedName + " as an array (if possible)");
+      out.println("        // TODO: Log " + loggedName + " as an array (if possible)");
     } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getTypeUtils().erasure(measureType))) {
-      out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
+      out.println("        dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
     } else {
       switch (dataType.toString()) {
         case "byte", "char", "short", "int", "long", "float", "double", "boolean",
             "byte[]", "int[]", "long[]", "float[]", "double[]", "boolean[]",
             "edu.wpi.first.wpilibj.XboxController",
             "edu.wpi.first.wpilibj.Joystick" ->
-            out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
+            out.println("        dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
         default -> {
           var reflectedDataType = getTypeElement(dataType);
-          out.println("      // TODO: Support " + dataType + " (" + (reflectedDataType == null ? "<unknown type>" : reflectedDataType.getQualifiedName()) + ") for " + codeName);
+          out.println("        // TODO: Support " + dataType + " (" + (reflectedDataType == null ? "<unknown type>" : reflectedDataType.getQualifiedName()) + ") for " + codeName);
         }
       }
     }

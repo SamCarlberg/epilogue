@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * Place this annotation on a class to automatically log every field and every public accessor
  * method (methods with no arguments and return a loggable data type). Use {@link #strategy()} to
  * flag a class as logging everything it can, except for those elements tagged with
- * {@code @Epilogue(skip = true)}; or for logging only specific items also tagged with
+ * {@code @Epilogue(importance = NONE)}; or for logging only specific items also tagged with
  * {@code @Epilogue}.
  *
  * <p>Logged fields may have any access modifier. Logged methods must be public; non-public
@@ -31,12 +31,6 @@ public @interface Epilogue {
    */
   String name() default "";
 
-  /**
-   * Tells Epilogue to skip logging the annotated element, regardless of any other configurations
-   * that may be set on it or its enclosing class. Does nothing on class-level annotations.
-   */
-  boolean skip() default false;
-
   enum Strategy {
     /**
      * Log everything except for those elements explicitly opted out of with the skip = true
@@ -55,4 +49,35 @@ public @interface Epilogue {
    * declarations.
    */
   Strategy strategy() default Strategy.OPT_OUT;
+
+  enum DataImportance {
+    /**
+     * The annotated element has no importance whatsoever and should never be logged.
+     */
+    NONE,
+
+    /**
+     * Debug information. Useful for low-level information like raw sensor values.
+     */
+    DEBUG,
+
+    /**
+     * Informational data. Useful for higher-level information like pose estimates or subsystem
+     * state.
+     */
+    INFO,
+
+    /**
+     * Critical data that should always be present in logs.
+     */
+    CRITICAL
+  }
+
+  /**
+   * The importance of the annotated data. If placed on a class or interface, this will be the
+   * default importance of all data within that class; this can be overridden on a per-element
+   * basis by annotating fields and methods with their own {@code @Epilogue(importance = ...)}
+   * annotation.
+   */
+  DataImportance importance() default DataImportance.DEBUG;
 }

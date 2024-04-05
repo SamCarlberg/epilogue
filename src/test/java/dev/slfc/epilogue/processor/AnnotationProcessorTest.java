@@ -37,7 +37,9 @@ class AnnotationProcessorTest {
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
           try {
-            dataLogger.log(identifier + "/x", object.x);
+            if (Epiloguer.shouldLog(Epilogue.DataImportance.DEBUG)) {
+              dataLogger.log(identifier + "/x", object.x);
+            }
           } catch (Exception e) {
             System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
           }
@@ -76,8 +78,10 @@ class AnnotationProcessorTest {
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
           try {
-            dataLogger.log(identifier + "/x", object.x);
-            dataLogger.log(identifier + "/y", object.y);
+            if (Epiloguer.shouldLog(Epilogue.DataImportance.DEBUG)) {
+              dataLogger.log(identifier + "/x", object.x);
+              dataLogger.log(identifier + "/y", object.y);
+            }
           } catch (Exception e) {
             System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
           }
@@ -117,7 +121,9 @@ class AnnotationProcessorTest {
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
           try {
-            dataLogger.log(identifier + "/x", (double) $x.get(object));
+            if (Epiloguer.shouldLog(Epilogue.DataImportance.DEBUG)) {
+              dataLogger.log(identifier + "/x", (double) $x.get(object));
+            }
           } catch (Exception e) {
             System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
           }
@@ -157,7 +163,58 @@ class AnnotationProcessorTest {
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
           try {
-            logSendable(dataLogger, identifier + "/chooser", (edu.wpi.first.wpilibj.smartdashboard.SendableChooser<java.lang.String>) $chooser.get(object));
+            if (Epiloguer.shouldLog(Epilogue.DataImportance.DEBUG)) {
+              logSendable(dataLogger, identifier + "/chooser", (edu.wpi.first.wpilibj.smartdashboard.SendableChooser<java.lang.String>) $chooser.get(object));
+            }
+          } catch (Exception e) {
+            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          }
+        }
+      }
+      """;
+
+    assertLoggerGenerates(source, expectedGeneratedSource);
+  }
+
+  @Test
+  void importanceLevels() throws IOException {
+    String source = """
+      package dev.slfc.epilogue;
+
+      @Epilogue(importance = Epilogue.DataImportance.INFO)
+      class HelloWorld {
+        @Epilogue(importance = Epilogue.DataImportance.DEBUG)    double low;
+        @Epilogue(importance = Epilogue.DataImportance.INFO)     int    medium;
+        @Epilogue(importance = Epilogue.DataImportance.CRITICAL) long   high;
+      }
+      """;
+
+
+    String expectedGeneratedSource = """
+      package dev.slfc.epilogue;
+
+      import dev.slfc.epilogue.logging.DataLogger;
+      import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import java.lang.invoke.VarHandle;
+      
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
+
+        public HelloWorldLogger() {
+          super(HelloWorld.class);
+        }
+        
+        @Override
+        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+          try {
+            if (Epiloguer.shouldLog(Epilogue.DataImportance.DEBUG)) {
+              dataLogger.log(identifier + "/low", object.low);
+            }
+            if (Epiloguer.shouldLog(Epilogue.DataImportance.INFO)) {
+              dataLogger.log(identifier + "/medium", object.medium);
+            }
+            if (Epiloguer.shouldLog(Epilogue.DataImportance.CRITICAL)) {
+              dataLogger.log(identifier + "/high", object.high);
+            }
           } catch (Exception e) {
             System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
           }
