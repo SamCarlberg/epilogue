@@ -45,15 +45,14 @@ public class FileLogger implements DataLogger {
   private <E extends DataLogEntry> E getEntry(
       String identifier,
       BiFunction<DataLog, String, ? extends E> ctor) {
-    requireNonNullParam(identifier, "identifier", "log");
 
-    if (entries.containsKey(identifier)) {
-      return (E) entries.get(identifier);
-    } else {
-      var entry = ctor.apply(dataLog, identifier);
-      entries.put(identifier, entry);
-      return entry;
+    if (entries.get(identifier) instanceof DataLogEntry entry) {
+      return (E) entry;
     }
+
+    var entry = ctor.apply(dataLog, identifier);
+    entries.put(identifier, entry);
+    return entry;
   }
 
   @Override

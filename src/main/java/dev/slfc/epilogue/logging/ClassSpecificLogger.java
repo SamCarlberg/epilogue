@@ -44,6 +44,10 @@ public abstract class ClassSpecificLogger<T> {
   public abstract void update(DataLogger dataLogger, String identifier, T object);
 
   protected void logSendable(DataLogger dataLogger, String identifier, Sendable sendable) {
+    if (sendable == null) {
+      return;
+    }
+
     var builder = sendables.computeIfAbsent(sendable, (s) -> {
       var b = new LogBackedSendableBuilder(dataLogger, identifier);
       s.initSendable(b);
