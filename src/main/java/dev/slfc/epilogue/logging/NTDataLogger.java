@@ -13,6 +13,8 @@ import edu.wpi.first.networktables.Publisher;
 import edu.wpi.first.networktables.RawPublisher;
 import edu.wpi.first.networktables.StringArrayPublisher;
 import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.networktables.StructArrayPublisher;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructBuffer;
 import java.util.HashMap;
@@ -26,10 +28,6 @@ public class NTDataLogger implements DataLogger {
   private final NetworkTableInstance nt;
 
   private final Map<String, Publisher> publishers = new HashMap<>();
-
-  // Cache struct buffers to avoid runtime allocations when possible
-  @SuppressWarnings("rawtypes")
-  private final Map<Struct, StructBuffer> buffers = new HashMap<>();
 
   public NTDataLogger(NetworkTableInstance nt) {
     this.nt = nt;
@@ -122,18 +120,15 @@ public class NTDataLogger implements DataLogger {
 
   @Override
   public <S> void log(String identifier, S value, Struct<S> struct) {
-    ((RawPublisher) publishers.computeIfAbsent(identifier, k -> nt.getRawTopic(k).publish(struct.getTypeString())))
-        .set(bufferFor(struct).write(value));
+    nt.addSchema(struct);
+    ((StructPublisher<S>) publishers.computeIfAbsent(identifier, k -> nt.getStructTopic(k, struct).publish()))
+        .set(value);
   }
 
   @Override
   public <S> void log(String identifier, S[] value, Struct<S> struct) {
-    ((RawPublisher) publishers.computeIfAbsent(identifier, k -> nt.getRawTopic(k).publish(struct.getTypeString())))
-        .set(bufferFor(struct).writeArray(value));
-  }
-
-  @SuppressWarnings("unchecked")
-  private <S> StructBuffer<S> bufferFor(Struct<S> struct) {
-    return buffers.computeIfAbsent(struct, StructBuffer::create);
+    nt.addSchema(struct);
+    ((StructArrayPublisher<S>) publishers.computeIfAbsent(identifier, k -> nt.getStructArrayTopic(k, struct).publish()))
+        .set(value);
   }
 }

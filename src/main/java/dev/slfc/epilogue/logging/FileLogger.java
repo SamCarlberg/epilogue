@@ -15,6 +15,8 @@ import edu.wpi.first.util.datalog.IntegerLogEntry;
 import edu.wpi.first.util.datalog.RawLogEntry;
 import edu.wpi.first.util.datalog.StringArrayLogEntry;
 import edu.wpi.first.util.datalog.StringLogEntry;
+import edu.wpi.first.util.datalog.StructArrayLogEntry;
+import edu.wpi.first.util.datalog.StructLogEntry;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructBuffer;
 import java.util.HashMap;
@@ -27,10 +29,6 @@ import java.util.function.BiFunction;
 public class FileLogger implements DataLogger {
   private final DataLog dataLog;
   private final Map<String, DataLogEntry> entries = new HashMap<>();
-
-  // Cache struct buffers to avoid runtime allocations when possible
-  @SuppressWarnings("rawtypes")
-  private final Map<Struct, StructBuffer> buffers = new HashMap<>();
 
   /**
    * Creates a new file logger.
@@ -128,21 +126,13 @@ public class FileLogger implements DataLogger {
   @SuppressWarnings("unchecked")
   public <S> void log(String identifier, S value, Struct<S> struct) {
     dataLog.addSchema(struct);
-    StructBuffer<S> buffer = buffers.computeIfAbsent(struct, StructBuffer::create);
-
-    var serializedData = buffer.write(value);
-
-    getEntry(identifier, RawLogEntry::new).append(serializedData);
+    getEntry(identifier, (log, k) -> StructLogEntry.create(log, k, struct)).append(value);
   }
 
   @Override
   @SuppressWarnings("unchecked")
   public <S> void log(String identifier, S[] value, Struct<S> struct) {
     dataLog.addSchema(struct);
-    StructBuffer<S> buffer = buffers.computeIfAbsent(struct, StructBuffer::create);
-
-    var serializedData = buffer.writeArray(value);
-
-    getEntry(identifier, RawLogEntry::new).append(serializedData);
+    getEntry(identifier, (log, k) -> StructArrayLogEntry.create(log, k, struct)).append(value);
   }
 }
