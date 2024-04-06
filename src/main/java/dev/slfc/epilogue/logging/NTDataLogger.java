@@ -17,6 +17,7 @@ import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructBuffer;
+import edu.wpi.first.util.struct.StructSerializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -119,14 +120,14 @@ public class NTDataLogger implements DataLogger {
   }
 
   @Override
-  public <S> void log(String identifier, S value, Struct<S> struct) {
+  public <S extends StructSerializable> void log(String identifier, S value, Struct<S> struct) {
     nt.addSchema(struct);
     ((StructPublisher<S>) publishers.computeIfAbsent(identifier, k -> nt.getStructTopic(k, struct).publish()))
         .set(value);
   }
 
   @Override
-  public <S> void log(String identifier, S[] value, Struct<S> struct) {
+  public <S extends StructSerializable> void log(String identifier, S[] value, Struct<S> struct) {
     nt.addSchema(struct);
     ((StructArrayPublisher<S>) publishers.computeIfAbsent(identifier, k -> nt.getStructArrayTopic(k, struct).publish()))
         .set(value);

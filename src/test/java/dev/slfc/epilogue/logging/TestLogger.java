@@ -2,6 +2,7 @@ package dev.slfc.epilogue.logging;
 
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructBuffer;
+import edu.wpi.first.util.struct.StructSerializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,14 +83,14 @@ public class TestLogger implements DataLogger {
   }
 
   @Override
-  public <S> void log(String identifier, S value, Struct<S> struct) {
+  public <S extends StructSerializable> void log(String identifier, S value, Struct<S> struct) {
     var serialized = StructBuffer.create(struct).write(value).array();
 
     entries.add(new LogEntry<>(identifier, serialized));
   }
 
   @Override
-  public <S> void log(String identifier, S[] value, Struct<S> struct) {
+  public <S extends StructSerializable> void log(String identifier, S[] value, Struct<S> struct) {
     var serialized = StructBuffer.create(struct).writeArray(value).array();
 
     entries.add(new LogEntry<>(identifier, serialized));

@@ -19,6 +19,7 @@ import edu.wpi.first.util.datalog.StructArrayLogEntry;
 import edu.wpi.first.util.datalog.StructLogEntry;
 import edu.wpi.first.util.struct.Struct;
 import edu.wpi.first.util.struct.StructBuffer;
+import edu.wpi.first.util.struct.StructSerializable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -124,14 +125,14 @@ public class FileLogger implements DataLogger {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <S> void log(String identifier, S value, Struct<S> struct) {
+  public <S extends StructSerializable> void log(String identifier, S value, Struct<S> struct) {
     dataLog.addSchema(struct);
     getEntry(identifier, (log, k) -> StructLogEntry.create(log, k, struct)).append(value);
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public <S> void log(String identifier, S[] value, Struct<S> struct) {
+  public <S extends StructSerializable> void log(String identifier, S[] value, Struct<S> struct) {
     dataLog.addSchema(struct);
     getEntry(identifier, (log, k) -> StructArrayLogEntry.create(log, k, struct)).append(value);
   }

@@ -1,6 +1,7 @@
 package dev.slfc.epilogue.logging;
 
 import edu.wpi.first.util.struct.Struct;
+import edu.wpi.first.util.struct.StructSerializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -201,7 +202,7 @@ public class LazyLogger implements DataLogger {
   }
 
   @Override
-  public <S> void log(String identifier, S value, Struct<S> struct) {
+  public <S extends StructSerializable> void log(String identifier, S value, Struct<S> struct) {
     var previous = previousValues.get(identifier);
 
     if (previous instanceof Object oldValue && oldValue.equals(value)) {
@@ -214,7 +215,7 @@ public class LazyLogger implements DataLogger {
   }
 
   @Override
-  public <S> void log(String identifier, S[] value, Struct<S> struct) {
+  public <S extends StructSerializable> void log(String identifier, S[] value, Struct<S> struct) {
     var previous = previousValues.get(identifier);
 
     if (previous instanceof Object[] oldValue && Arrays.equals(oldValue, value)) {

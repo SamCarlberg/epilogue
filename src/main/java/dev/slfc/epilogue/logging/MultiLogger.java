@@ -1,6 +1,7 @@
 package dev.slfc.epilogue.logging;
 
 import edu.wpi.first.util.struct.Struct;
+import edu.wpi.first.util.struct.StructSerializable;
 import java.util.Collection;
 import java.util.List;
 
@@ -111,14 +112,14 @@ public class MultiLogger implements DataLogger {
   }
 
   @Override
-  public <S> void log(String identifier, S value, Struct<S> struct) {
+  public <S extends StructSerializable> void log(String identifier, S value, Struct<S> struct) {
     for (DataLogger logger : loggers) {
       logger.log(identifier, value, struct);
     }
   }
 
   @Override
-  public <S> void log(String identifier, S[] value, Struct<S> struct) {
+  public <S extends StructSerializable> void log(String identifier, S[] value, Struct<S> struct) {
     for (DataLogger logger : loggers) {
       logger.log(identifier, value, struct);
     }
