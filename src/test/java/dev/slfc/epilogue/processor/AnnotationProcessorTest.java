@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 
 class AnnotationProcessorTest {
   @Test
-  void simple() throws IOException {
+  void simple() {
     String source = """
       package dev.slfc.epilogue;
       
@@ -53,7 +53,7 @@ class AnnotationProcessorTest {
   }
 
   @Test
-  void multiple() throws IOException {
+  void multiple() {
     String source = """
       package dev.slfc.epilogue;
 
@@ -97,7 +97,7 @@ class AnnotationProcessorTest {
   }
 
   @Test
-  void privateFields() throws IOException {
+  void privateFields() {
     String source = """
       package dev.slfc.epilogue;
       
@@ -141,7 +141,7 @@ class AnnotationProcessorTest {
   }
 
   @Test
-  void privateWithGenerics() throws IOException {
+  void privateWithGenerics() {
     String source = """
       package dev.slfc.epilogue;
 
@@ -185,7 +185,7 @@ class AnnotationProcessorTest {
   }
 
   @Test
-  void importanceLevels() throws IOException {
+  void importanceLevels() {
     String source = """
       package dev.slfc.epilogue;
 
@@ -235,7 +235,512 @@ class AnnotationProcessorTest {
     assertLoggerGenerates(source, expectedGeneratedSource);
   }
 
-  private void assertLoggerGenerates(String loggedClassContent, String loggerClassContent) throws IOException {
+  @Test
+  void logEnum() {
+    String source = """
+      package dev.slfc.epilogue;
+
+      @Epilogue
+      class HelloWorld {
+        enum E {
+          a, b, c;
+        }
+        private E enumValue;   // Should be logged
+        private E[] enumArray; // Should not be logged
+      }
+      """;
+
+    String expectedGeneratedSource = """
+      package dev.slfc.epilogue;
+
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
+      import dev.slfc.epilogue.logging.DataLogger;
+      import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import java.lang.invoke.VarHandle;
+
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
+        private final VarHandle $enumValue;
+
+        public HelloWorldLogger() {
+          super(HelloWorld.class);
+          $enumValue = fieldHandle("enumValue", dev.slfc.epilogue.HelloWorld.E.class);
+        }
+
+        @Override
+        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+          try {
+            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+              dataLogger.log(identifier + "/enumValue", (dev.slfc.epilogue.HelloWorld.E) $enumValue.get(object));
+            }
+          } catch (Exception e) {
+            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          }
+        }
+      }
+      """;
+
+    assertLoggerGenerates(source, expectedGeneratedSource);
+  }
+
+  @Test
+  void bytes() {
+    String source = """
+      package dev.slfc.epilogue;
+
+      @Epilogue
+      class HelloWorld {
+        byte x;        // Should be logged
+        byte[] arr1;   // Should be logged
+        byte[][] arr2; // Should not be logged
+      }
+      """;
+
+    String expectedGeneratedSource = """
+      package dev.slfc.epilogue;
+
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
+      import dev.slfc.epilogue.logging.DataLogger;
+      import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import java.lang.invoke.VarHandle;
+
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
+
+        public HelloWorldLogger() {
+          super(HelloWorld.class);
+        }
+
+        @Override
+        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+          try {
+            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+              dataLogger.log(identifier + "/x", object.x);
+              dataLogger.log(identifier + "/arr1", object.arr1);
+            }
+          } catch (Exception e) {
+            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          }
+        }
+      }
+      """;
+
+    assertLoggerGenerates(source, expectedGeneratedSource);
+  }
+
+  @Test
+  void chars() {
+    String source = """
+      package dev.slfc.epilogue;
+
+      @Epilogue
+      class HelloWorld {
+        char x;        // Should be logged
+        char[] arr1;   // Should not be logged
+        char[][] arr2; // Should not be logged
+      }
+      """;
+
+    String expectedGeneratedSource = """
+      package dev.slfc.epilogue;
+
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
+      import dev.slfc.epilogue.logging.DataLogger;
+      import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import java.lang.invoke.VarHandle;
+
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
+
+        public HelloWorldLogger() {
+          super(HelloWorld.class);
+        }
+
+        @Override
+        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+          try {
+            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+              dataLogger.log(identifier + "/x", object.x);
+            }
+          } catch (Exception e) {
+            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          }
+        }
+      }
+      """;
+
+    assertLoggerGenerates(source, expectedGeneratedSource);
+  }
+
+  @Test
+  void shorts() {
+    String source = """
+      package dev.slfc.epilogue;
+
+      @Epilogue
+      class HelloWorld {
+        char x;        // Should be logged
+        char[] arr1;   // Should not be logged
+        char[][] arr2; // Should not be logged
+      }
+      """;
+
+    String expectedGeneratedSource = """
+      package dev.slfc.epilogue;
+
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
+      import dev.slfc.epilogue.logging.DataLogger;
+      import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import java.lang.invoke.VarHandle;
+
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
+
+        public HelloWorldLogger() {
+          super(HelloWorld.class);
+        }
+
+        @Override
+        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+          try {
+            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+              dataLogger.log(identifier + "/x", object.x);
+            }
+          } catch (Exception e) {
+            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          }
+        }
+      }
+      """;
+
+    assertLoggerGenerates(source, expectedGeneratedSource);
+  }
+
+  @Test
+  void ints() {
+    String source = """
+      package dev.slfc.epilogue;
+
+      @Epilogue
+      class HelloWorld {
+        int x;           // Should be logged
+        int[] intArr1;   // Should be logged
+        int[][] intArr2; // Should not be logged
+      }
+      """;
+
+    String expectedGeneratedSource = """
+      package dev.slfc.epilogue;
+
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
+      import dev.slfc.epilogue.logging.DataLogger;
+      import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import java.lang.invoke.VarHandle;
+
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
+
+        public HelloWorldLogger() {
+          super(HelloWorld.class);
+        }
+
+        @Override
+        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+          try {
+            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+              dataLogger.log(identifier + "/x", object.x);
+              dataLogger.log(identifier + "/intArr1", object.intArr1);
+            }
+          } catch (Exception e) {
+            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          }
+        }
+      }
+      """;
+
+    assertLoggerGenerates(source, expectedGeneratedSource);
+  }
+
+  @Test
+  void longs() {
+    String source = """
+      package dev.slfc.epilogue;
+
+      @Epilogue
+      class HelloWorld {
+        long x;        // Should be logged
+        long[] arr1;   // Should be logged
+        long[][] arr2; // Should not be logged
+      }
+      """;
+
+    String expectedGeneratedSource = """
+      package dev.slfc.epilogue;
+
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
+      import dev.slfc.epilogue.logging.DataLogger;
+      import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import java.lang.invoke.VarHandle;
+
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
+
+        public HelloWorldLogger() {
+          super(HelloWorld.class);
+        }
+
+        @Override
+        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+          try {
+            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+              dataLogger.log(identifier + "/x", object.x);
+              dataLogger.log(identifier + "/arr1", object.arr1);
+            }
+          } catch (Exception e) {
+            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          }
+        }
+      }
+      """;
+
+    assertLoggerGenerates(source, expectedGeneratedSource);
+  }
+
+  @Test
+  void floats() {
+    String source = """
+      package dev.slfc.epilogue;
+
+      @Epilogue
+      class HelloWorld {
+        float x;        // Should be logged
+        float[] arr1;   // Should be logged
+        float[][] arr2; // Should not be logged
+      }
+      """;
+
+    String expectedGeneratedSource = """
+      package dev.slfc.epilogue;
+
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
+      import dev.slfc.epilogue.logging.DataLogger;
+      import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import java.lang.invoke.VarHandle;
+
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
+
+        public HelloWorldLogger() {
+          super(HelloWorld.class);
+        }
+
+        @Override
+        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+          try {
+            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+              dataLogger.log(identifier + "/x", object.x);
+              dataLogger.log(identifier + "/arr1", object.arr1);
+            }
+          } catch (Exception e) {
+            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          }
+        }
+      }
+      """;
+
+    assertLoggerGenerates(source, expectedGeneratedSource);
+  }
+
+  @Test
+  void doubles() {
+    String source = """
+      package dev.slfc.epilogue;
+
+      @Epilogue
+      class HelloWorld {
+        double x;        // Should be logged
+        double[] arr1;   // Should be logged
+        double[][] arr2; // Should not be logged
+      }
+      """;
+
+    String expectedGeneratedSource = """
+      package dev.slfc.epilogue;
+
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
+      import dev.slfc.epilogue.logging.DataLogger;
+      import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import java.lang.invoke.VarHandle;
+
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
+
+        public HelloWorldLogger() {
+          super(HelloWorld.class);
+        }
+
+        @Override
+        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+          try {
+            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+              dataLogger.log(identifier + "/x", object.x);
+              dataLogger.log(identifier + "/arr1", object.arr1);
+            }
+          } catch (Exception e) {
+            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          }
+        }
+      }
+      """;
+
+    assertLoggerGenerates(source, expectedGeneratedSource);
+  }
+
+  @Test
+  void booleans() {
+    String source = """
+      package dev.slfc.epilogue;
+
+      @Epilogue
+      class HelloWorld {
+        boolean x;        // Should be logged
+        boolean[] arr1;   // Should be logged
+        boolean[][] arr2; // Should not be logged
+      }
+      """;
+
+    String expectedGeneratedSource = """
+      package dev.slfc.epilogue;
+
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
+      import dev.slfc.epilogue.logging.DataLogger;
+      import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import java.lang.invoke.VarHandle;
+
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
+
+        public HelloWorldLogger() {
+          super(HelloWorld.class);
+        }
+
+        @Override
+        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+          try {
+            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+              dataLogger.log(identifier + "/x", object.x);
+              dataLogger.log(identifier + "/arr1", object.arr1);
+            }
+          } catch (Exception e) {
+            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          }
+        }
+      }
+      """;
+
+    assertLoggerGenerates(source, expectedGeneratedSource);
+  }
+
+  @Test
+  void strings() {
+    String source = """
+      package dev.slfc.epilogue;
+
+      @Epilogue
+      class HelloWorld {
+        String str;         // Should be logged
+        String[] strArr1;   // Should be logged
+        String[][] strArr2; // Should not be logged
+      }
+      """;
+
+    String expectedGeneratedSource = """
+      package dev.slfc.epilogue;
+
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
+      import dev.slfc.epilogue.logging.DataLogger;
+      import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import java.lang.invoke.VarHandle;
+
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
+
+        public HelloWorldLogger() {
+          super(HelloWorld.class);
+        }
+
+        @Override
+        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+          try {
+            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+              dataLogger.log(identifier + "/str", object.str);
+              dataLogger.log(identifier + "/strArr1", object.strArr1);
+            }
+          } catch (Exception e) {
+            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          }
+        }
+      }
+      """;
+
+    assertLoggerGenerates(source, expectedGeneratedSource);
+  }
+
+  @Test
+  void structs() {
+    String source = """
+      package dev.slfc.epilogue;
+
+      import edu.wpi.first.util.struct.Struct;
+      import edu.wpi.first.util.struct.StructSerializable;
+
+      @Epilogue
+      class HelloWorld {
+        static class Structable implements StructSerializable {
+          int x, y;
+
+          public static final Struct<Structable> struct = null; // value doesn't matter
+        }
+
+        Structable x;        // Should be logged
+        Structable[] arr1;   // Should be logged
+        Structable[][] arr2; // Should not be logged
+      }
+      """;
+
+    String expectedGeneratedSource = """
+      package dev.slfc.epilogue;
+
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
+      import dev.slfc.epilogue.logging.DataLogger;
+      import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import java.lang.invoke.VarHandle;
+
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
+
+        public HelloWorldLogger() {
+          super(HelloWorld.class);
+        }
+
+        @Override
+        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+          try {
+            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+              dataLogger.log(identifier + "/x", object.x, dev.slfc.epilogue.HelloWorld.Structable.struct);
+              dataLogger.log(identifier + "/arr1", object.arr1, dev.slfc.epilogue.HelloWorld.Structable.struct);
+            }
+          } catch (Exception e) {
+            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          }
+        }
+      }
+      """;
+
+    assertLoggerGenerates(source, expectedGeneratedSource);
+  }
+
+  private void assertLoggerGenerates(String loggedClassContent, String loggerClassContent) {
     Compilation compilation =
         javac()
             .withProcessors(new AnnotationProcessor())
@@ -247,7 +752,11 @@ class AnnotationProcessorTest {
     // first is Epiloguer
     // second is the class-specific logger
     var generatedFile = generatedFiles.getLast();
-    var content = generatedFile.getCharContent(false);
-    assertEquals(loggerClassContent, content);
+    try {
+      var content = generatedFile.getCharContent(false);
+      assertEquals(loggerClassContent, content);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 }

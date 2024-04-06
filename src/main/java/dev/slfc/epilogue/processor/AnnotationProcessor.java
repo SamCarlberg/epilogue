@@ -1,6 +1,7 @@
 package dev.slfc.epilogue.processor;
 
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
 
 import com.google.auto.service.AutoService;
 import dev.slfc.epilogue.Epilogue;
@@ -66,7 +67,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                 .filter(notSkipped)
                 .filter(optedIn)
                 .filter(e -> !e.getModifiers().contains(Modifier.STATIC))
-                .filter(e -> isLoggable(e.asType()))
+                .filter(e -> isLoggable(e.asType(), false))
                 .toList();
 
         var methodsToLog =
@@ -79,7 +80,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                 .filter(e -> e.getModifiers().contains(Modifier.PUBLIC))
                 .filter(e -> e.getParameters().isEmpty())
                 .filter(e -> e.getReceiverType() != null)
-                .filter(e -> isLoggable(e.getReturnType()))
+                .filter(e -> isLoggable(e.getReturnType(), false))
                 .toList();
 
         try {
@@ -336,7 +337,8 @@ public class AnnotationProcessor extends AbstractProcessor {
           switch (loggableElement) {
             case VariableElement field -> logField(out, field);
             case ExecutableElement method -> logMethod(out, method);
-            default -> {} // Ignore
+            default -> {
+            } // Ignore
           }
         }
         out.println("      }");
@@ -350,14 +352,40 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
   }
 
-  private boolean isLoggable(TypeMirror type) {
+  /**
+   * Checks if a type is loggable.
+   *
+   * @param type the type to check
+   * @param isArrayComponent flags the type as being a component of an outer array type. Used to
+   *                         prevent logging multidimensional arrays or arrays of non-loggable types
+   */
+  private boolean isLoggable(TypeMirror type, boolean isArrayComponent) {
     if (type instanceof NoType) {
       // e.g. void, cannot log
       return false;
     }
 
-    if (type.getKind().isPrimitive()) {
-      // All primitives can be logged
+    // Check for presence of a `public static final Struct<?> struct` field on the variable's
+    // declared type, eg Rotation2d.struct
+    var typeElement = processingEnv.getElementUtils().getTypeElement(processingEnv.getTypeUtils().erasure(type).toString());
+    boolean hasStructDeclaration = hasStructDeclaration(typeElement);
+
+    if (isArrayComponent) {
+      // Only arrays of certain primitives, strings, and structs can be logged
+      // Multidimensional arrays are never loggable
+      return isLoggablePrimitive(type, true)
+          || type.toString().equals("java.lang.String")
+          || hasStructDeclaration;
+    }
+
+    if (isLoggablePrimitive(type, false) || type.toString().equals("java.lang.String") || hasStructDeclaration) {
+      // All primitives and strings can be logged
+      return true;
+    }
+
+    var enumType = processingEnv.getElementUtils().getTypeElement("java.lang.Enum");
+    if (processingEnv.getTypeUtils().isAssignable(type, processingEnv.getTypeUtils().erasure(enumType.asType()))) {
+      // Enum values can be logged
       return true;
     }
 
@@ -403,19 +431,31 @@ public class AnnotationProcessor extends AbstractProcessor {
       return true;
     }
 
-    // Check for presence of a `public static final Struct<?> struct` field on the variable's
-    // declared type, eg Rotation2d.struct
-    var typeElement = processingEnv.getElementUtils().getTypeElement(processingEnv.getTypeUtils().erasure(type).toString());
-    if (hasStructDeclaration(typeElement)) {
-      return true;
-    }
-
     if (type instanceof ArrayType arrayType && arrayType.getComponentType().getKind() != TypeKind.ARRAY) {
       // Can log single-dimensional arrays of loggable types, eg double[] but not double[][]
-      return isLoggable(arrayType.getComponentType());
+      return isLoggable(arrayType.getComponentType(), true);
     }
 
     processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Cannot log values of type " + type + ". Any declared loggable elements of this type will be excluded from logs.");
+
+    return false;
+  }
+
+  private boolean isLoggablePrimitive(TypeMirror type, boolean isArrayComponent) {
+    if (type.getKind().isPrimitive()) {
+      if (isArrayComponent) {
+        return switch (type.toString()) {
+          case "byte", "int", "long", "float", "double", "boolean" -> true;
+          default -> false;
+        };
+      } else {
+        return switch (type.toString()) {
+          // All
+          case "byte", "char", "short", "int", "long", "float", "double", "boolean" -> true;
+          default -> false;
+        };
+      }
+    }
 
     return false;
   }
@@ -426,7 +466,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     TypeElement struct = processingEnv.getElementUtils().getTypeElement("edu.wpi.first.util.struct.Struct");
-    var structType = struct.asType();
+    var structType = processingEnv.getTypeUtils().getDeclaredType(struct, typeElement.asType());
 
     for (Element enclosedElement : typeElement.getEnclosedElements()) {
       if (enclosedElement instanceof VariableElement varElement) {
@@ -437,7 +477,7 @@ public class AnnotationProcessor extends AbstractProcessor {
               modifiers.contains(Modifier.FINAL)) {
 
             TypeMirror variableType = varElement.asType();
-            if (processingEnv.getTypeUtils().isAssignable(variableType, processingEnv.getTypeUtils().erasure(structType))) {
+            if (processingEnv.getTypeUtils().isAssignable(variableType, structType)) {
               // The type has a declared `public static final Struct<Foo> struct` field,
               // which lets us serialize to raw bytes
               return true;
@@ -532,10 +572,14 @@ public class AnnotationProcessor extends AbstractProcessor {
       out.println("        // TODO: Log " + loggedName + " as an array (if possible)");
     } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getTypeUtils().erasure(measureType))) {
       out.println("        dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
+    } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getTypeUtils().erasure(processingEnv.getElementUtils().getTypeElement("java.lang.Enum").asType()))) {
+      // Enum
+      out.println("        dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
     } else {
       switch (dataType.toString()) {
         case "byte", "char", "short", "int", "long", "float", "double", "boolean",
             "byte[]", "int[]", "long[]", "float[]", "double[]", "boolean[]",
+            "java.lang.String", "java.lang.String[]",
             "edu.wpi.first.wpilibj.XboxController",
             "edu.wpi.first.wpilibj.Joystick" ->
             out.println("        dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
