@@ -24,6 +24,8 @@ class AnnotationProcessorTest {
     String expectedGeneratedSource = """
       package dev.slfc.epilogue;
 
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
       import java.lang.invoke.VarHandle;
@@ -65,6 +67,8 @@ class AnnotationProcessorTest {
     String expectedGeneratedSource = """
       package dev.slfc.epilogue;
 
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
       import java.lang.invoke.VarHandle;
@@ -106,6 +110,8 @@ class AnnotationProcessorTest {
     String expectedGeneratedSource = """
       package dev.slfc.epilogue;
 
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
       import java.lang.invoke.VarHandle;
@@ -148,6 +154,8 @@ class AnnotationProcessorTest {
     String expectedGeneratedSource = """
       package dev.slfc.epilogue;
 
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
       import java.lang.invoke.VarHandle;
@@ -193,6 +201,8 @@ class AnnotationProcessorTest {
     String expectedGeneratedSource = """
       package dev.slfc.epilogue;
 
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
       import java.lang.invoke.VarHandle;
