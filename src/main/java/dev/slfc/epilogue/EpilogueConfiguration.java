@@ -23,9 +23,9 @@ public class EpilogueConfiguration {
    * The minimum importance level of data to be logged. Defaults to debug, which logs data of all
    * importance levels. Any data tagged with a importance level lower than this will not be logged.
    *
-   * <p>Note: setting this value to {@link dev.slfc.epilogue.Epilogue.DataImportance#NONE} will
+   * <p>Note: setting this value to {@link Epilogue.Importance#NONE} will
    * behave exactly as if it were set to debug, because elements tagged with an importance of
    * {@code NONE} are excluded from the generated loggers.</p>
    */
-  public Epilogue.DataImportance minimumImportance = Epilogue.DataImportance.DEBUG;
+  public Epilogue.Importance minimumImportance = Epilogue.Importance.DEBUG;
 }

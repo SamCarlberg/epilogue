@@ -39,7 +39,7 @@ class AnnotationProcessorTest {
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
           try {
-            if (Epiloguer.shouldLog(Epilogue.DataImportance.DEBUG)) {
+            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
               dataLogger.log(identifier + "/x", object.x);
             }
           } catch (Exception e) {
@@ -82,7 +82,7 @@ class AnnotationProcessorTest {
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
           try {
-            if (Epiloguer.shouldLog(Epilogue.DataImportance.DEBUG)) {
+            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
               dataLogger.log(identifier + "/x", object.x);
               dataLogger.log(identifier + "/y", object.y);
             }
@@ -127,7 +127,7 @@ class AnnotationProcessorTest {
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
           try {
-            if (Epiloguer.shouldLog(Epilogue.DataImportance.DEBUG)) {
+            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
               dataLogger.log(identifier + "/x", (double) $x.get(object));
             }
           } catch (Exception e) {
@@ -171,7 +171,7 @@ class AnnotationProcessorTest {
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
           try {
-            if (Epiloguer.shouldLog(Epilogue.DataImportance.DEBUG)) {
+            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
               logSendable(dataLogger, identifier + "/chooser", (edu.wpi.first.wpilibj.smartdashboard.SendableChooser<java.lang.String>) $chooser.get(object));
             }
           } catch (Exception e) {
@@ -189,11 +189,11 @@ class AnnotationProcessorTest {
     String source = """
       package dev.slfc.epilogue;
 
-      @Epilogue(importance = Epilogue.DataImportance.INFO)
+      @Epilogue(importance = Epilogue.Importance.INFO)
       class HelloWorld {
-        @Epilogue(importance = Epilogue.DataImportance.DEBUG)    double low;
-        @Epilogue(importance = Epilogue.DataImportance.INFO)     int    medium;
-        @Epilogue(importance = Epilogue.DataImportance.CRITICAL) long   high;
+        @Epilogue(importance = Epilogue.Importance.DEBUG)    double low;
+        @Epilogue(importance = Epilogue.Importance.INFO)     int    medium;
+        @Epilogue(importance = Epilogue.Importance.CRITICAL) long   high;
       }
       """;
 
@@ -216,13 +216,13 @@ class AnnotationProcessorTest {
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
           try {
-            if (Epiloguer.shouldLog(Epilogue.DataImportance.DEBUG)) {
+            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
               dataLogger.log(identifier + "/low", object.low);
             }
-            if (Epiloguer.shouldLog(Epilogue.DataImportance.INFO)) {
+            if (Epiloguer.shouldLog(Epilogue.Importance.INFO)) {
               dataLogger.log(identifier + "/medium", object.medium);
             }
-            if (Epiloguer.shouldLog(Epilogue.DataImportance.CRITICAL)) {
+            if (Epiloguer.shouldLog(Epilogue.Importance.CRITICAL)) {
               dataLogger.log(identifier + "/high", object.high);
             }
           } catch (Exception e) {

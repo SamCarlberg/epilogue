@@ -50,7 +50,7 @@ public @interface Epilogue {
    */
   Strategy strategy() default Strategy.OPT_OUT;
 
-  enum DataImportance {
+  enum Importance {
     /**
      * The annotated element has no importance whatsoever and should never be logged.
      */
@@ -79,5 +79,5 @@ public @interface Epilogue {
    * basis by annotating fields and methods with their own {@code @Epilogue(importance = ...)}
    * annotation.
    */
-  DataImportance importance() default DataImportance.DEBUG;
+  Importance importance() default Importance.DEBUG;
 }

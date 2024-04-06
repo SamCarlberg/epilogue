@@ -8,11 +8,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.FilerException;
@@ -48,7 +46,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     Predicate<Element> notSkipped = (e) -> {
       var epilogue = e.getAnnotation(Epilogue.class);
       // Skipping must be done through the annotation, so no annotation means it's not skipped
-      return epilogue == null || epilogue.importance() != Epilogue.DataImportance.NONE;
+      return epilogue == null || epilogue.importance() != Epilogue.Importance.NONE;
     };
 
     for (TypeElement annotation : annotations) {
@@ -177,7 +175,7 @@ public class AnnotationProcessor extends AbstractProcessor {
               /**
                * Checks if data associated with a given importance level should be logged.
                */
-              public static boolean shouldLog(Epilogue.DataImportance importance) {
+              public static boolean shouldLog(Epilogue.Importance importance) {
                 return importance.compareTo(config.minimumImportance) >= 0;
               }
             """);
@@ -328,12 +326,12 @@ public class AnnotationProcessor extends AbstractProcessor {
                       return config.importance();
                     }
                   },
-                  () -> new EnumMap<>(Epilogue.DataImportance.class), // EnumMap for consistent ordering
+                  () -> new EnumMap<>(Epilogue.Importance.class), // EnumMap for consistent ordering
                   toList())
               );
 
       loggedElementsByImportance.forEach((importance, elements) -> {
-        out.println("      if (Epiloguer.shouldLog(Epilogue.DataImportance." + importance.name() + ")) {");
+        out.println("      if (Epiloguer.shouldLog(Epilogue.Importance." + importance.name() + ")) {");
         for (var loggableElement : elements) {
           switch (loggableElement) {
             case VariableElement field -> logField(out, field);
