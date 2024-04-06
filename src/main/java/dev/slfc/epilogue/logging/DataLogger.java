@@ -1,6 +1,7 @@
 package dev.slfc.epilogue.logging;
 
 import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.Unit;
 import edu.wpi.first.util.struct.Struct;
 
 public interface DataLogger {
@@ -57,6 +58,18 @@ public interface DataLogger {
    */
   default void log(String identifier, Measure<?> value) {
     log(identifier, value.baseUnitMagnitude());
+  }
+
+  /**
+   * Logs a measurement's value in terms of another unit.
+   *
+   * @param identifier the identifier of the data field
+   * @param value the new value of the data field
+   * @param unit the unit to log the measurement in
+   * @param <U> the dimension of the unit
+   */
+  default <U extends Unit<U>> void log(String identifier, Measure<U> value, U unit) {
+    log(identifier, value.in(unit));
   }
 
   // TODO: Add default methods to support common no-struct no-sendable types like joysticks?
