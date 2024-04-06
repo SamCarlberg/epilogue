@@ -102,7 +102,9 @@ public class AnnotationProcessor extends AbstractProcessor {
       }
     }
 
-    writeEpiloguerFile(loggerClassNames, mainRobotClass);
+    if (!annotations.isEmpty()) {
+      writeEpiloguerFile(loggerClassNames, mainRobotClass);
+    }
 
     return true;
   }
@@ -220,9 +222,6 @@ public class AnnotationProcessor extends AbstractProcessor {
 
         out.println("}");
       }
-    } catch (FilerException e) {
-      // Probably from trying to create the file multiple times in the same compilation step
-      // We can ignore this, since the file contents shouldn't change
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
