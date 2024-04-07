@@ -16,7 +16,6 @@ import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.util.struct.Struct;
-import edu.wpi.first.util.struct.StructBuffer;
 import edu.wpi.first.util.struct.StructSerializable;
 import java.util.HashMap;
 import java.util.Map;
