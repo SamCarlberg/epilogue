@@ -507,12 +507,15 @@ class AnnotationProcessorTest {
   void doubles() {
     String source = """
       package dev.slfc.epilogue;
+      
+      import java.util.List;
 
       @Epilogue
       class HelloWorld {
         double x;        // Should be logged
         double[] arr1;   // Should be logged
         double[][] arr2; // Should not be logged
+        List<Double> list; // Should not be logged
       }
       """;
 
@@ -548,12 +551,14 @@ class AnnotationProcessorTest {
   void booleans() {
     String source = """
       package dev.slfc.epilogue;
+      import java.util.List;
 
       @Epilogue
       class HelloWorld {
         boolean x;        // Should be logged
         boolean[] arr1;   // Should be logged
         boolean[][] arr2; // Should not be logged
+        List<Boolean> list; // Should not be logged
       }
       """;
 
@@ -589,12 +594,15 @@ class AnnotationProcessorTest {
   void strings() {
     String source = """
       package dev.slfc.epilogue;
+      
+      import java.util.List;
 
       @Epilogue
       class HelloWorld {
         String str;         // Should be logged
         String[] strArr1;   // Should be logged
         String[][] strArr2; // Should not be logged
+        List<String> list;  // Should be logged
       }
       """;
 
@@ -618,6 +626,7 @@ class AnnotationProcessorTest {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
             dataLogger.log(identifier + "/str", object.str);
             dataLogger.log(identifier + "/strArr1", object.strArr1);
+            dataLogger.log(identifier + "/list", (object.list).toArray(java.lang.String[]::new));
           }
         }
       }
@@ -633,6 +642,7 @@ class AnnotationProcessorTest {
 
       import edu.wpi.first.util.struct.Struct;
       import edu.wpi.first.util.struct.StructSerializable;
+      import java.util.List;
 
       @Epilogue
       class HelloWorld {
@@ -645,6 +655,7 @@ class AnnotationProcessorTest {
         Structable x;        // Should be logged
         Structable[] arr1;   // Should be logged
         Structable[][] arr2; // Should not be logged
+        List<Structable> list; // Should be logged
       }
       """;
 
@@ -668,7 +679,102 @@ class AnnotationProcessorTest {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
             dataLogger.log(identifier + "/x", object.x, dev.slfc.epilogue.HelloWorld.Structable.struct);
             dataLogger.log(identifier + "/arr1", object.arr1, dev.slfc.epilogue.HelloWorld.Structable.struct);
+            dataLogger.log(identifier + "/list", (object.list).toArray(dev.slfc.epilogue.HelloWorld.Structable[]::new), dev.slfc.epilogue.HelloWorld.Structable.struct);
           }
+        }
+      }
+      """;
+
+    assertLoggerGenerates(source, expectedGeneratedSource);
+  }
+
+  @Test
+  void lists() {
+    String source = """
+      package dev.slfc.epilogue;
+
+      import edu.wpi.first.util.struct.Struct;
+      import edu.wpi.first.util.struct.StructSerializable;
+      import java.util.*;
+
+      @Epilogue
+      class HelloWorld {
+        /* Logged */     List<String> list;
+        /* Not Logged */ List<List<String>> nestedList;
+        /* Not logged */ List rawList;
+        /* Logged */     Set<String> set;
+        /* Logged */     Queue<String> queue;
+        /* Logged */     Stack<String> stack;
+      }
+      """;
+
+    String expectedGeneratedSource = """
+      package dev.slfc.epilogue;
+
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
+      import dev.slfc.epilogue.logging.DataLogger;
+      import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import java.lang.invoke.VarHandle;
+
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
+
+        public HelloWorldLogger() {
+          super(HelloWorld.class);
+        }
+
+        @Override
+        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            dataLogger.log(identifier + "/list", (object.list).toArray(java.lang.String[]::new));
+            dataLogger.log(identifier + "/set", (object.set).toArray(java.lang.String[]::new));
+            dataLogger.log(identifier + "/queue", (object.queue).toArray(java.lang.String[]::new));
+            dataLogger.log(identifier + "/stack", (object.stack).toArray(java.lang.String[]::new));
+          }
+        }
+      }
+      """;
+
+    assertLoggerGenerates(source, expectedGeneratedSource);
+  }
+
+  @Test
+  void boxedPrimitiveLists() {
+    // Boxed primitives are not directly supported, nor are arrays of boxed primitives
+    // int[] is fine, but Integer[] is not
+
+    String source = """
+      package dev.slfc.epilogue;
+
+      import edu.wpi.first.util.struct.Struct;
+      import edu.wpi.first.util.struct.StructSerializable;
+      import java.util.List;
+
+      @Epilogue
+      class HelloWorld {
+        /* Not logged */ List<Integer> ints;
+        /* Not logged */ List<Double> doubles;
+        /* Not logged */ List<Long> longs;
+      }
+      """;
+
+    String expectedGeneratedSource = """
+      package dev.slfc.epilogue;
+
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
+      import dev.slfc.epilogue.logging.DataLogger;
+      import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import java.lang.invoke.VarHandle;
+
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
+
+        public HelloWorldLogger() {
+          super(HelloWorld.class);
+        }
+
+        @Override
+        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
         }
       }
       """;

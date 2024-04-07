@@ -409,6 +409,16 @@ public class AnnotationProcessor extends AbstractProcessor {
       return isLoggable(arrayType.getComponentType(), true);
     }
 
+    var rawCollection = processingEnv.getTypeUtils().erasure(processingEnv.getElementUtils().getTypeElement("java.util.Collection").asType());
+    if (processingEnv.getTypeUtils().isAssignable(type, rawCollection) && type instanceof DeclaredType decl) {
+      if (decl.getTypeArguments().size() != 1) {
+        // Probably raw type, not loggable
+        return false;
+      }
+      var bound = decl.getTypeArguments().getFirst();
+      return isLoggable(bound, true);
+    }
+
     processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Cannot log values of type " + type + ". Any declared loggable elements of this type will be excluded from logs.");
 
     return false;
@@ -517,7 +527,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     var sendableType = processingEnv.getElementUtils().getTypeElement("edu.wpi.first.util.sendable.Sendable").asType();
     var commandType = processingEnv.getElementUtils().getTypeElement("edu.wpi.first.wpilibj2.command.Command").asType();
     var subsystemType = processingEnv.getElementUtils().getTypeElement("edu.wpi.first.wpilibj2.command.SubsystemBase").asType();
-    var listType = processingEnv.getElementUtils().getTypeElement("java.util.List").asType();
+    var collectionType = processingEnv.getElementUtils().getTypeElement("java.util.Collection").asType();
     var measureType = processingEnv.getElementUtils().getTypeElement("edu.wpi.first.units.Measure").asType();
 
     var reflectedType = getTypeElement(processingEnv.getTypeUtils().erasure(dataType));
@@ -541,8 +551,18 @@ public class AnnotationProcessor extends AbstractProcessor {
       // in signature on the value parameter
       var componentType = ((ArrayType) dataType).getComponentType();
       loggerCall(out, componentType, codeName, loggedName, access);
-    } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getTypeUtils().erasure(listType))) {
-      out.println("      // TODO: Log " + loggedName + " as an array (if possible)");
+    } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getTypeUtils().erasure(collectionType)) && dataType instanceof DeclaredType decl) {
+      // Can only get here if already determined to be loggable - ie, has a valid generic type bound
+      var componentType = decl.getTypeArguments().getFirst();
+
+      var toArry = "(" + access + ").toArray(" + componentType + "[]::new)";
+      if (hasStructDeclaration(getTypeElement(componentType))) {
+        // Logged as an array of structs, need to provide the serde object
+        out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + toArry + ", " + processingEnv.getTypeUtils().erasure(componentType) + ".struct);");
+      } else {
+        // Not structs, can use one of the `log` methods and let the overloads figure it out
+        out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + toArry + ");");
+      }
     } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getTypeUtils().erasure(measureType))) {
       out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
     } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getTypeUtils().erasure(processingEnv.getElementUtils().getTypeElement("java.lang.Enum").asType()))) {
