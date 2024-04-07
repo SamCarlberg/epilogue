@@ -66,7 +66,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                 .filter(notSkipped)
                 .filter(optedIn)
                 .filter(e -> !e.getModifiers().contains(Modifier.STATIC))
-                .filter(e -> isLoggable(e.asType(), false))
+                .filter(e -> isLoggable(e, e.asType(), false))
                 .toList();
 
         var methodsToLog =
@@ -79,7 +79,7 @@ public class AnnotationProcessor extends AbstractProcessor {
                 .filter(e -> e.getModifiers().contains(Modifier.PUBLIC))
                 .filter(e -> e.getParameters().isEmpty())
                 .filter(e -> e.getReceiverType() != null)
-                .filter(e -> isLoggable(e.getReturnType(), false))
+                .filter(e -> isLoggable(e, e.getReturnType(), false))
                 .toList();
 
         try {
@@ -332,7 +332,7 @@ public class AnnotationProcessor extends AbstractProcessor {
    * @param isArrayComponent flags the type as being a component of an outer array type. Used to
    *                         prevent logging multidimensional arrays or arrays of non-loggable types
    */
-  private boolean isLoggable(TypeMirror type, boolean isArrayComponent) {
+  private boolean isLoggable(Element element, TypeMirror type, boolean isArrayComponent) {
     if (type instanceof NoType) {
       // e.g. void, cannot log
       return false;
@@ -384,7 +384,6 @@ public class AnnotationProcessor extends AbstractProcessor {
       }
       for (TypeMirror iface : te.getInterfaces()) {
         if (iface.getAnnotation(Epilogue.class) != null) {
-          processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "@Epilogue tagged interface detected: " + iface, te);
           return true;
         }
       }
@@ -399,14 +398,15 @@ public class AnnotationProcessor extends AbstractProcessor {
       return true;
     }
 
-    if (isLoggableSendableType(type)) {
-      // Can log sendables, but not commands or subsystems
-      return true;
+    if (isSendable(type)) {
+      // Early return here to skip the warning message. Don't need to spam the compiler output
+      // with warnings about commands not being loggable
+      return isLoggableSendableType(type);
     }
 
     if (type instanceof ArrayType arrayType && arrayType.getComponentType().getKind() != TypeKind.ARRAY) {
       // Can log single-dimensional arrays of loggable types, eg double[] but not double[][]
-      return isLoggable(arrayType.getComponentType(), true);
+      return isLoggable(element, arrayType.getComponentType(), true);
     }
 
     var rawCollection = processingEnv.getTypeUtils().erasure(processingEnv.getElementUtils().getTypeElement("java.util.Collection").asType());
@@ -416,10 +416,10 @@ public class AnnotationProcessor extends AbstractProcessor {
         return false;
       }
       var bound = decl.getTypeArguments().getFirst();
-      return isLoggable(bound, true);
+      return isLoggable(element, bound, true);
     }
 
-    processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "Cannot log values of type " + type + ". Any declared loggable elements of this type will be excluded from logs.");
+    processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "[EPILOGUE] Excluded from logs because " + type + " is not a loggable data type", element);
 
     return false;
   }
@@ -471,6 +471,11 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     return false;
+  }
+
+  private boolean isSendable(TypeMirror dataType) {
+    var sendableType = processingEnv.getElementUtils().getTypeElement("edu.wpi.first.util.sendable.Sendable").asType();
+    return processingEnv.getTypeUtils().isAssignable(dataType, sendableType);
   }
 
   private boolean isLoggableSendableType(TypeMirror dataType) {
@@ -564,6 +569,7 @@ public class AnnotationProcessor extends AbstractProcessor {
         out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + toArry + ");");
       }
     } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getTypeUtils().erasure(measureType))) {
+      // Measurement like Measure<Voltage>
       out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
     } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getTypeUtils().erasure(processingEnv.getElementUtils().getTypeElement("java.lang.Enum").asType()))) {
       // Enum
