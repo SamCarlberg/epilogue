@@ -128,3 +128,108 @@ public class Robot extends TimedRobot {
   }
 }
 ```
+
+## Examples
+
+### Introductory
+
+```java
+@Epilogue
+class Robot extends TimedRobot {
+  Pose2d previousPose;
+
+  Pose2d getPose();
+
+  Measure<Velocity<Distance>> velocity();
+
+  @Override
+  public void robotInit() {
+    Epiloguer.configure(config -> {
+      config.dataLogger = new FileLogger(DataLogManager.getLog());
+    });
+
+    Epiloguer.bind(this);
+  }
+}
+```
+
+### Importance Levels
+
+Data can be flagged with difference importance levels, which can be used to configure how much data should get logged. For example, you might want to gather as much information as possible in your workspace, but only log the really important things during a match to keep CPU usage and network bandwidth down.
+
+By default, all data fields are treated as having the `DEBUG` information level unless otherwise specified. It can be set either on the class-level `@Epilogue` annotation to set the default for all fields within that class to something else, or on the individual fields themselves.
+
+| Information Level | Description                                                                                                             |
+|-------------------|-------------------------------------------------------------------------------------------------------------------------|
+| `NONE`            | Any data field flagged with `importance = NONE` will never be logged                                                    |
+| `DEBUG`           | Low-level information like raw sensor data that is useful for tuning controls and troubleshooting                       |
+| `INFO`            | Medium-level information that is useful for tracking higher-level concepts like subsystem states and a robot's position |
+| `CRITICAL`        | Critical information like hardware or mechanism faults that should always be included in logs                           |
+
+```java
+// Treat everything in this class as critical information unless otherwise specified
+@Epilogue(importance = Epilogue.Importance.CRITICAL)
+class Robot extends TimedRobot {
+  // This is low importance, override the class-level default
+  @Epilogue(importance = Epilogue.Importance.DEBUG)
+  Pose2d previousPose;
+
+  // Medium importance, override the class-level default
+  @Epilogue(importance = Epilogue.Importance.INFO)
+  Pose2d getPose();
+
+  // Not explicitly configured. Therefore, per the class-level default, this is considered critical
+  Measure<Velocity<Distance>> velocity();
+  
+  // This field is utterly unimportant and should never be logged
+  @Epilogue(importance = Epilogue.Importance.NONE)
+  private double ignored;
+  
+  @Override
+  public void robotInit() {
+    Epiloguer.configure(config -> {
+      // Setting minimum importance to INFO excludes previousPose,
+      // since DEBUG is less important than INFO
+      config.minimumImportance = Epilogue.Importance.INFO;
+      config.dataLogger = new FileLogger(DataLogManager.getLog());
+    });
+
+    Epiloguer.bind(this);
+  }
+}
+```
+
+### Error Handling
+
+The default error handler used by Epilogue will print out errors to the standard output. This helps prevent logging setups from causing robot code to crash at inopportune times (such as during an official match!).
+
+Error handling behavior can be configured with the `errorHandler` property. Epilogue comes with three types of error handlers by default: the one that prints errors to the console; one that rethrows the errors and causes code to crash; and one that automatically disables loggers after too many exceptions are encountered during use.
+
+The `errorHandler` property is a functional interface, and can be set using a lambda function. The function accepts the logger that encountered the error, and the exception object that was encountered.
+
+```java
+@Epilogue
+class Robot extends TimedRobot {
+  @Override
+  public void robotInit() {
+    Epiloguer.configure(config -> {
+      if (isSimulation()) {
+        // In simulation or unit tests, rethrow any errors encountered during logging
+        // This lets us quickly find and fix bugs before they make it to a real robot
+        config.errorHandler = ErrorHandler.crashOnError();
+      } else {
+        // Running on a real robot, allow loggers to continue running after a single error.
+        // But if a logger later encounters a second error, disable it.
+        config.errorHandler = ErrorHandler.disabling(1);
+      }
+
+      // Or use something custom:
+      config.errorHandler = (logger, exception) -> {
+        // ... custom error handling logic
+      };
+    });
+
+    Epiloguer.bind(this);
+  }
+}
+```
