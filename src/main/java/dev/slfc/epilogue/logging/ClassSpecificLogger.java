@@ -1,5 +1,6 @@
 package dev.slfc.epilogue.logging;
 
+import dev.slfc.epilogue.logging.errors.ErrorHandler;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import java.lang.invoke.MethodHandles;
@@ -21,6 +22,8 @@ public abstract class ClassSpecificLogger<T> {
   // Linked hashmap to maintain insert order
   private final Map<Sendable, SendableBuilder> sendables = new LinkedHashMap<>();
 
+  private boolean disabled = false;
+
   /**
    * @param clazz the Java class of objects that can be logged
    */
@@ -41,7 +44,51 @@ public abstract class ClassSpecificLogger<T> {
    *                   delimiter
    * @param object the object to update in the log
    */
-  public abstract void update(DataLogger dataLogger, String identifier, T object);
+  protected abstract void update(DataLogger dataLogger, String identifier, T object);
+
+  public final void tryUpdate(
+      DataLogger dataLogger,
+      String identifier,
+      T object,
+      ErrorHandler errorHandler) {
+    if (disabled) {
+      return;
+    }
+
+    try {
+      update(dataLogger, identifier, object);
+    } catch (Exception e) {
+      errorHandler.handle(e, this);
+    }
+  }
+
+  /**
+   * Checks if this logger has been disabled.
+   */
+  public final boolean isDisabled() {
+    return disabled;
+  }
+
+  /**
+   * Disables this logger. Any log calls made while disabled will be ignored.
+   */
+  public final void disable() {
+    disabled = true;
+  }
+
+  /**
+   * Reenables this logger after being disabled. Has no effect if the logger is already enabled.
+   */
+  public final void reenable() {
+    disabled = false;
+  }
+
+  /**
+   * Gets the type of the data this logger accepts.
+   */
+  public final Class<T> getLoggedType() {
+    return clazz;
+  }
 
   protected void logSendable(DataLogger dataLogger, String identifier, Sendable sendable) {
     if (sendable == null) {
@@ -64,7 +111,7 @@ public abstract class ClassSpecificLogger<T> {
    * @param fieldType the declared type of the field
    * @return the field handle
    */
-  protected VarHandle fieldHandle(String name, Class<?> fieldType) {
+  protected final VarHandle fieldHandle(String name, Class<?> fieldType) {
     try {
       return lookup.findVarHandle(clazz, name, fieldType);
     } catch (ReflectiveOperationException e) {

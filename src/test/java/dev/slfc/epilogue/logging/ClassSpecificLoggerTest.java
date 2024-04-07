@@ -22,7 +22,7 @@ class ClassSpecificLoggerTest {
     }
 
     @Override
-    public void update(DataLogger dataLogger, String identifier, Point2d object) {
+    protected void update(DataLogger dataLogger, String identifier, Point2d object) {
       try {
         dataLogger.log(identifier + "/x", (double) $x.get(object));
         dataLogger.log(identifier + "/y", (double) $y.get(object));

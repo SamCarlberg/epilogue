@@ -38,12 +38,8 @@ class AnnotationProcessorTest {
 
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
-          try {
-            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-              dataLogger.log(identifier + "/x", object.x);
-            }
-          } catch (Exception e) {
-            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            dataLogger.log(identifier + "/x", object.x);
           }
         }
       }
@@ -81,13 +77,9 @@ class AnnotationProcessorTest {
 
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
-          try {
-            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-              dataLogger.log(identifier + "/x", object.x);
-              dataLogger.log(identifier + "/y", object.y);
-            }
-          } catch (Exception e) {
-            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            dataLogger.log(identifier + "/x", object.x);
+            dataLogger.log(identifier + "/y", object.y);
           }
         }
       }
@@ -126,12 +118,8 @@ class AnnotationProcessorTest {
           
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
-          try {
-            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-              dataLogger.log(identifier + "/x", (double) $x.get(object));
-            }
-          } catch (Exception e) {
-            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            dataLogger.log(identifier + "/x", (double) $x.get(object));
           }
         }
       }
@@ -170,12 +158,8 @@ class AnnotationProcessorTest {
 
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
-          try {
-            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-              logSendable(dataLogger, identifier + "/chooser", (edu.wpi.first.wpilibj.smartdashboard.SendableChooser<java.lang.String>) $chooser.get(object));
-            }
-          } catch (Exception e) {
-            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            logSendable(dataLogger, identifier + "/chooser", (edu.wpi.first.wpilibj.smartdashboard.SendableChooser<java.lang.String>) $chooser.get(object));
           }
         }
       }
@@ -215,18 +199,14 @@ class AnnotationProcessorTest {
         
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
-          try {
-            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-              dataLogger.log(identifier + "/low", object.low);
-            }
-            if (Epiloguer.shouldLog(Epilogue.Importance.INFO)) {
-              dataLogger.log(identifier + "/medium", object.medium);
-            }
-            if (Epiloguer.shouldLog(Epilogue.Importance.CRITICAL)) {
-              dataLogger.log(identifier + "/high", object.high);
-            }
-          } catch (Exception e) {
-            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            dataLogger.log(identifier + "/low", object.low);
+          }
+          if (Epiloguer.shouldLog(Epilogue.Importance.INFO)) {
+            dataLogger.log(identifier + "/medium", object.medium);
+          }
+          if (Epiloguer.shouldLog(Epilogue.Importance.CRITICAL)) {
+            dataLogger.log(identifier + "/high", object.high);
           }
         }
       }
@@ -269,12 +249,8 @@ class AnnotationProcessorTest {
 
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
-          try {
-            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-              dataLogger.log(identifier + "/enumValue", (dev.slfc.epilogue.HelloWorld.E) $enumValue.get(object));
-            }
-          } catch (Exception e) {
-            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            dataLogger.log(identifier + "/enumValue", (dev.slfc.epilogue.HelloWorld.E) $enumValue.get(object));
           }
         }
       }
@@ -313,13 +289,9 @@ class AnnotationProcessorTest {
 
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
-          try {
-            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-              dataLogger.log(identifier + "/x", object.x);
-              dataLogger.log(identifier + "/arr1", object.arr1);
-            }
-          } catch (Exception e) {
-            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            dataLogger.log(identifier + "/x", object.x);
+            dataLogger.log(identifier + "/arr1", object.arr1);
           }
         }
       }
@@ -358,12 +330,8 @@ class AnnotationProcessorTest {
 
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
-          try {
-            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-              dataLogger.log(identifier + "/x", object.x);
-            }
-          } catch (Exception e) {
-            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            dataLogger.log(identifier + "/x", object.x);
           }
         }
       }
@@ -402,12 +370,8 @@ class AnnotationProcessorTest {
 
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
-          try {
-            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-              dataLogger.log(identifier + "/x", object.x);
-            }
-          } catch (Exception e) {
-            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            dataLogger.log(identifier + "/x", object.x);
           }
         }
       }
@@ -446,13 +410,9 @@ class AnnotationProcessorTest {
 
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
-          try {
-            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-              dataLogger.log(identifier + "/x", object.x);
-              dataLogger.log(identifier + "/intArr1", object.intArr1);
-            }
-          } catch (Exception e) {
-            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            dataLogger.log(identifier + "/x", object.x);
+            dataLogger.log(identifier + "/intArr1", object.intArr1);
           }
         }
       }
@@ -491,13 +451,9 @@ class AnnotationProcessorTest {
 
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
-          try {
-            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-              dataLogger.log(identifier + "/x", object.x);
-              dataLogger.log(identifier + "/arr1", object.arr1);
-            }
-          } catch (Exception e) {
-            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            dataLogger.log(identifier + "/x", object.x);
+            dataLogger.log(identifier + "/arr1", object.arr1);
           }
         }
       }
@@ -536,13 +492,9 @@ class AnnotationProcessorTest {
 
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
-          try {
-            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-              dataLogger.log(identifier + "/x", object.x);
-              dataLogger.log(identifier + "/arr1", object.arr1);
-            }
-          } catch (Exception e) {
-            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            dataLogger.log(identifier + "/x", object.x);
+            dataLogger.log(identifier + "/arr1", object.arr1);
           }
         }
       }
@@ -581,13 +533,9 @@ class AnnotationProcessorTest {
 
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
-          try {
-            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-              dataLogger.log(identifier + "/x", object.x);
-              dataLogger.log(identifier + "/arr1", object.arr1);
-            }
-          } catch (Exception e) {
-            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            dataLogger.log(identifier + "/x", object.x);
+            dataLogger.log(identifier + "/arr1", object.arr1);
           }
         }
       }
@@ -626,13 +574,9 @@ class AnnotationProcessorTest {
 
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
-          try {
-            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-              dataLogger.log(identifier + "/x", object.x);
-              dataLogger.log(identifier + "/arr1", object.arr1);
-            }
-          } catch (Exception e) {
-            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            dataLogger.log(identifier + "/x", object.x);
+            dataLogger.log(identifier + "/arr1", object.arr1);
           }
         }
       }
@@ -671,13 +615,9 @@ class AnnotationProcessorTest {
 
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
-          try {
-            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-              dataLogger.log(identifier + "/str", object.str);
-              dataLogger.log(identifier + "/strArr1", object.strArr1);
-            }
-          } catch (Exception e) {
-            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            dataLogger.log(identifier + "/str", object.str);
+            dataLogger.log(identifier + "/strArr1", object.strArr1);
           }
         }
       }
@@ -725,13 +665,9 @@ class AnnotationProcessorTest {
 
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
-          try {
-            if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-              dataLogger.log(identifier + "/x", object.x, dev.slfc.epilogue.HelloWorld.Structable.struct);
-              dataLogger.log(identifier + "/arr1", object.arr1, dev.slfc.epilogue.HelloWorld.Structable.struct);
-            }
-          } catch (Exception e) {
-            System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            dataLogger.log(identifier + "/x", object.x, dev.slfc.epilogue.HelloWorld.Structable.struct);
+            dataLogger.log(identifier + "/arr1", object.arr1, dev.slfc.epilogue.HelloWorld.Structable.struct);
           }
         }
       }

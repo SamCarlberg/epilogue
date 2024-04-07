@@ -180,23 +180,6 @@ public class AnnotationProcessor extends AbstractProcessor {
               public static boolean shouldLog(Epilogue.Importance importance) {
                 return importance.compareTo(config.minimumImportance) >= 0;
               }
-            """);
-
-        out.println("""
-              /**
-               * Handles an error in Epilogue. By default, this will print the error message to the
-               * console, but this can be overridden to throw an exception instead by setting the
-               * {@code crashOnError} configuration option to {@code true}.
-               *
-               * @param errorMessage the error message to handle
-               */
-              public static void handleError(String errorMessage) {
-                if (config.crashOnError) {
-                  throw new IllegalStateException(errorMessage);
-                } else {
-                  System.err.println(errorMessage);
-                }
-              }
             """.stripTrailing());
 
         // Only generate a binding if the robot class is a TimedRobot
@@ -214,7 +197,7 @@ public class AnnotationProcessor extends AbstractProcessor {
               """);
           out.println("  public static void bind(" + robotClassName + " robot) {");
           out.println("    robot.addPeriodic(() -> {");
-          out.println("      " + lowerCamelCase(simpleName(robotClassName)) + "Logger.update(config.dataLogger, \"Robot\", robot);");
+          out.println("      " + lowerCamelCase(simpleName(robotClassName)) + "Logger.tryUpdate(config.dataLogger, \"Robot\", robot, Epiloguer.getConfig().errorHandler);");
           out.println("    }, robot.getPeriod(), robot.getPeriod() / 2);");
           out.println("  }");
         }
@@ -302,13 +285,8 @@ public class AnnotationProcessor extends AbstractProcessor {
       out.print(simpleClassName);
       out.println(" object) {");
 
-      // try {
-      //    [log fields]
-      //    [log methods]
-      // } catch (Exception e) {
-      //   System.err.println("[EPILOGUE] Encountered an error while logging: " + e.getMessage());
-      // }
-      out.println("    try {");
+      // [log fields]
+      // [log methods]
 
       // Build a map of importance levels to the fields logged at those levels
       // e.g. { DEBUG: [fieldA, fieldB], INFO: [fieldC], CRITICAL: [fieldD, fieldE, fieldF] }
@@ -330,7 +308,7 @@ public class AnnotationProcessor extends AbstractProcessor {
               );
 
       loggedElementsByImportance.forEach((importance, elements) -> {
-        out.println("      if (Epiloguer.shouldLog(Epilogue.Importance." + importance.name() + ")) {");
+        out.println("    if (Epiloguer.shouldLog(Epilogue.Importance." + importance.name() + ")) {");
         for (var loggableElement : elements) {
           switch (loggableElement) {
             case VariableElement field -> logField(out, field);
@@ -339,12 +317,9 @@ public class AnnotationProcessor extends AbstractProcessor {
             } // Ignore
           }
         }
-        out.println("      }");
+        out.println("    }");
       });
 
-      out.println("    } catch (Exception e) {");
-      out.println("      System.err.println(\"[EPILOGUE] Encountered an error while logging: \" + e.getMessage());");
-      out.println("    }");
       out.println("  }");
       out.println("}");
     }
@@ -552,13 +527,13 @@ public class AnnotationProcessor extends AbstractProcessor {
         !processingEnv.getTypeUtils().isAssignable(dataType, subsystemType)
     ) {
       // Log as sendable
-      out.println("        logSendable(dataLogger, identifier + \"/" + loggedName + "\", " + access + ");");
+      out.println("      logSendable(dataLogger, identifier + \"/" + loggedName + "\", " + access + ");");
     } else if (reflectedType != null && reflectedType.getAnnotation(Epilogue.class) != null) {
       // Log nested fields that support Epilogue
-      out.println("        Epiloguer." + lowerCamelCase(simpleName(reflectedType.getQualifiedName().toString())) + "Logger.update(dataLogger, identifier + \"/" + loggedName + "\", " + access + ");");
+      out.println("      Epiloguer." + lowerCamelCase(simpleName(reflectedType.getQualifiedName().toString())) + "Logger.tryUpdate(dataLogger, identifier + \"/" + loggedName + "\", " + access + ", Epiloguer.getConfig().errorHandler);");
     } else if (hasStructDeclaration(reflectedType)) {
       // Log with struct serialization
-      out.println("        dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ", " + reflectedType.getQualifiedName() + ".struct);");
+      out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ", " + reflectedType.getQualifiedName() + ".struct);");
     } else if (dataType.getKind() == TypeKind.ARRAY) {
       // Invoke with information about the array type
       // This takes advantage of the fact that the array log calls have EXACTLY the same shape as
@@ -567,12 +542,12 @@ public class AnnotationProcessor extends AbstractProcessor {
       var componentType = ((ArrayType) dataType).getComponentType();
       loggerCall(out, componentType, codeName, loggedName, access);
     } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getTypeUtils().erasure(listType))) {
-      out.println("        // TODO: Log " + loggedName + " as an array (if possible)");
+      out.println("      // TODO: Log " + loggedName + " as an array (if possible)");
     } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getTypeUtils().erasure(measureType))) {
-      out.println("        dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
+      out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
     } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getTypeUtils().erasure(processingEnv.getElementUtils().getTypeElement("java.lang.Enum").asType()))) {
       // Enum
-      out.println("        dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
+      out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
     } else {
       switch (dataType.toString()) {
         case "byte", "char", "short", "int", "long", "float", "double", "boolean",
@@ -580,10 +555,10 @@ public class AnnotationProcessor extends AbstractProcessor {
             "java.lang.String", "java.lang.String[]",
             "edu.wpi.first.wpilibj.XboxController",
             "edu.wpi.first.wpilibj.Joystick" ->
-            out.println("        dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
+            out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
         default -> {
           var reflectedDataType = getTypeElement(dataType);
-          out.println("        // TODO: Support " + dataType + " (" + (reflectedDataType == null ? "<unknown type>" : reflectedDataType.getQualifiedName()) + ") for " + codeName);
+          out.println("      // TODO: Support " + dataType + " (" + (reflectedDataType == null ? "<unknown type>" : reflectedDataType.getQualifiedName()) + ") for " + codeName);
         }
       }
     }

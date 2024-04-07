@@ -109,10 +109,6 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     Epiloguer.configure(config -> {
-      // When running in simulation or tests,
-      // throw errors instead of printing them
-      config.crashOnError = RobotBase.isSimulation();
-
       // Log to a .wpilog file on the roboRIO's filesystem
       config.dataLogger = new FileLogger(DataLogManager.getLog());
 
