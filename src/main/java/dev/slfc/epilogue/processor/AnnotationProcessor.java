@@ -52,6 +52,15 @@ public class AnnotationProcessor extends AbstractProcessor {
     for (TypeElement annotation : annotations) {
       var annotatedElements = roundEnv.getElementsAnnotatedWith(annotation);
 
+      boolean validFields = validateFields(annotatedElements);
+      boolean validMethods = validateMethods(annotatedElements);
+
+      if (!(validFields && validMethods)) {
+        // Generate nothing and bail
+        // Return `true` to mark the annotations as claimed so they're not processed again
+        return true;
+      }
+
       var classes = annotatedElements.stream().filter(e -> e instanceof TypeElement).map(e -> (TypeElement) e).toList();
       for (TypeElement clazz : classes) {
         var epilogue = clazz.getAnnotation(Epilogue.class);
@@ -106,6 +115,108 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     return true;
+  }
+
+  private boolean validateFields(Set<? extends Element> annotatedElements) {
+    var fields =
+        annotatedElements.stream()
+            .filter(e -> e instanceof VariableElement)
+            .map(e -> (VariableElement) e)
+            .toList();
+
+    boolean valid = true;
+
+    for (VariableElement field : fields) {
+      var config = field.getAnnotation(Epilogue.class);
+      if (config != null) {
+        // Field is explicitly tagged
+        if (config.importance() != Epilogue.Importance.NONE) {
+          // And is not opted out of
+          if (!isLoggable(field, field.asType(), false)) {
+            // And is not of a loggable type
+            processingEnv.getMessager().printMessage(
+                Diagnostic.Kind.ERROR,
+                "[EPILOGUE] You have opted in to Epilogue logging on this field, but it is not a loggable data type!",
+                field
+            );
+            valid = false;
+          }
+        }
+      }
+    }
+    return valid;
+  }
+
+  private boolean validateMethods(Set<? extends Element> annotatedElements) {
+    var methods =
+        annotatedElements.stream()
+            .filter(e -> e instanceof ExecutableElement)
+            .map(e -> (ExecutableElement) e)
+            .toList();
+
+    boolean valid = true;
+
+    for (ExecutableElement method : methods) {
+      var config = method.getAnnotation(Epilogue.class);
+      if (config != null) {
+        // Field is explicitly tagged
+        if (config.importance() != Epilogue.Importance.NONE) {
+          // And is not opted out of
+          if (!isLoggable(method, method.getReturnType(), false)) {
+            // And is not of a loggable type
+            processingEnv.getMessager().printMessage(
+                Diagnostic.Kind.ERROR,
+                "[EPILOGUE] You have opted in to Epilogue logging on this method, but it does not return a loggable data type!",
+                method
+            );
+            valid = false;
+          }
+
+          if (!method.getModifiers().contains(Modifier.PUBLIC)) {
+            // Only public methods can be logged
+
+            processingEnv.getMessager().printMessage(
+                Diagnostic.Kind.ERROR,
+                "[EPILOGUE] Logged methods must be public",
+                method
+            );
+
+            valid = false;
+          }
+
+          if (method.getModifiers().contains(Modifier.STATIC)) {
+            processingEnv.getMessager().printMessage(
+                Diagnostic.Kind.ERROR,
+                "[EPILOGUE] Logged methods cannot be static",
+                method
+            );
+
+            valid = false;
+          }
+
+          if (method.getReturnType().getKind() == TypeKind.NONE) {
+            processingEnv.getMessager().printMessage(
+                Diagnostic.Kind.ERROR,
+                "[EPILOGUE] Logged methods cannot be void",
+                method
+            );
+
+            valid = false;
+          }
+
+          if (!method.getParameters().isEmpty()) {
+            processingEnv.getMessager().printMessage(
+                Diagnostic.Kind.ERROR,
+                "[EPILOGUE] Logged methods cannot accept arguments",
+                method
+            );
+
+            valid = false;
+          }
+        }
+      }
+    }
+    return valid;
   }
 
   /**
@@ -343,15 +454,17 @@ public class AnnotationProcessor extends AbstractProcessor {
     var typeElement = processingEnv.getElementUtils().getTypeElement(processingEnv.getTypeUtils().erasure(type).toString());
     boolean hasStructDeclaration = hasStructDeclaration(typeElement);
 
+    var string = processingEnv.getElementUtils().getTypeElement("java.lang.String");
+
     if (isArrayComponent) {
       // Only arrays of certain primitives, strings, and structs can be logged
       // Multidimensional arrays are never loggable
       return isLoggablePrimitive(type, true)
-          || type.toString().equals("java.lang.String")
+          || processingEnv.getTypeUtils().isAssignable(type, string.asType())
           || hasStructDeclaration;
     }
 
-    if (isLoggablePrimitive(type, false) || type.toString().equals("java.lang.String") || hasStructDeclaration) {
+    if (isLoggablePrimitive(type, false) || processingEnv.getTypeUtils().isAssignable(type, string.asType()) || hasStructDeclaration) {
       // All primitives and strings can be logged
       return true;
     }
@@ -573,6 +686,9 @@ public class AnnotationProcessor extends AbstractProcessor {
       out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
     } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getTypeUtils().erasure(processingEnv.getElementUtils().getTypeElement("java.lang.Enum").asType()))) {
       // Enum
+      out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
+    } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getElementUtils().getTypeElement("java.lang.String").asType())) {
+      // String
       out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
     } else {
       switch (dataType.toString()) {
