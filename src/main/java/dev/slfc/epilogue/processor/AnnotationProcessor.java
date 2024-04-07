@@ -561,29 +561,9 @@ public class AnnotationProcessor extends AbstractProcessor {
       return false;
     }
 
-    TypeElement struct = processingEnv.getElementUtils().getTypeElement("edu.wpi.first.util.struct.Struct");
-    var structType = processingEnv.getTypeUtils().getDeclaredType(struct, typeElement.asType());
+    var serializable = processingEnv.getElementUtils().getTypeElement("edu.wpi.first.util.struct.StructSerializable");
 
-    for (Element enclosedElement : typeElement.getEnclosedElements()) {
-      if (enclosedElement instanceof VariableElement varElement) {
-        if (varElement.getSimpleName().contentEquals("struct")) {
-          Set<Modifier> modifiers = varElement.getModifiers();
-          if (modifiers.contains(Modifier.PUBLIC) &&
-              modifiers.contains(Modifier.STATIC) &&
-              modifiers.contains(Modifier.FINAL)) {
-
-            TypeMirror variableType = varElement.asType();
-            if (processingEnv.getTypeUtils().isAssignable(variableType, structType)) {
-              // The type has a declared `public static final Struct<Foo> struct` field,
-              // which lets us serialize to raw bytes
-              return true;
-            }
-          }
-        }
-      }
-    }
-
-    return false;
+    return processingEnv.getTypeUtils().isAssignable(typeElement.asType(), serializable.asType());
   }
 
   private boolean isSendable(TypeMirror dataType) {
