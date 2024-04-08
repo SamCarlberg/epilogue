@@ -352,8 +352,8 @@ public class AnnotationProcessor extends AbstractProcessor {
 
       out.println("import dev.slfc.epilogue.Epilogue;");
       out.println("import dev.slfc.epilogue.Epiloguer;");
-      out.println("import dev.slfc.epilogue.logging.DataLogger;");
       out.println("import dev.slfc.epilogue.logging.ClassSpecificLogger;");
+      out.println("import dev.slfc.epilogue.logging.DataLogger;");
       if (requiresVarHandles) {
         out.println("import java.lang.invoke.MethodHandles;");
         out.println("import java.lang.invoke.VarHandle;");

@@ -31,8 +31,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
@@ -68,8 +68,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
@@ -105,8 +105,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
       import java.lang.invoke.MethodHandles;
       import java.lang.invoke.VarHandle;
           
@@ -154,8 +154,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
       import java.lang.invoke.MethodHandles;
       import java.lang.invoke.VarHandle;
 
@@ -206,8 +206,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
@@ -252,8 +252,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
@@ -290,8 +290,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
@@ -329,8 +329,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
@@ -367,8 +367,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
@@ -405,8 +405,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
@@ -444,8 +444,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
@@ -483,8 +483,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
@@ -525,8 +525,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
@@ -566,8 +566,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
@@ -608,8 +608,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
@@ -659,8 +659,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
@@ -706,8 +706,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
@@ -754,8 +754,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
@@ -850,8 +850,8 @@ class AnnotationProcessorTest {
 
       import dev.slfc.epilogue.Epilogue;
       import dev.slfc.epilogue.Epiloguer;
-      import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
