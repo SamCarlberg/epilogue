@@ -33,10 +33,8 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
@@ -72,10 +70,8 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
@@ -111,14 +107,23 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import java.lang.invoke.MethodHandles;
       import java.lang.invoke.VarHandle;
           
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-        private final VarHandle $x;
+        private static final VarHandle $x;
+        
+        static {
+          try {
+            var lookup = MethodHandles.privateLookupIn(HelloWorld.class, MethodHandles.lookup());
+            $x = lookup.findVarHandle(HelloWorld.class, "x", double.class);
+          } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("[EPILOGUE] Could not load private fields for logging!", e);
+          }
+        }
           
         public HelloWorldLogger() {
           super(HelloWorld.class);
-          $x = fieldHandle("x", double.class);
         }
           
         @Override
@@ -151,14 +156,23 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import java.lang.invoke.MethodHandles;
       import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-        private final VarHandle $chooser;
+        private static final VarHandle $chooser;
+
+        static {
+          try {
+            var lookup = MethodHandles.privateLookupIn(HelloWorld.class, MethodHandles.lookup());
+            $chooser = lookup.findVarHandle(HelloWorld.class, "chooser", edu.wpi.first.wpilibj.smartdashboard.SendableChooser.class);
+          } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("[EPILOGUE] Could not load private fields for logging!", e);
+          }
+        }
 
         public HelloWorldLogger() {
           super(HelloWorld.class);
-          $chooser = fieldHandle("chooser", edu.wpi.first.wpilibj.smartdashboard.SendableChooser.class);
         }
 
         @Override
@@ -194,10 +208,8 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
-      
-      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
 
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
@@ -230,8 +242,8 @@ class AnnotationProcessorTest {
         enum E {
           a, b, c;
         }
-        private E enumValue;   // Should be logged
-        private E[] enumArray; // Should not be logged
+        E enumValue;   // Should be logged
+        E[] enumArray; // Should not be logged
       }
       """;
 
@@ -242,20 +254,16 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-        private final VarHandle $enumValue;
-
         public HelloWorldLogger() {
           super(HelloWorld.class);
-          $enumValue = fieldHandle("enumValue", dev.slfc.epilogue.HelloWorld.E.class);
         }
 
         @Override
         public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/enumValue", (dev.slfc.epilogue.HelloWorld.E) $enumValue.get(object));
+            dataLogger.log(identifier + "/enumValue", object.enumValue);
           }
         }
       }
@@ -284,10 +292,8 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
@@ -325,10 +331,8 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
@@ -365,10 +369,8 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
@@ -405,10 +407,8 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
@@ -446,10 +446,8 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
@@ -487,10 +485,8 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
@@ -531,10 +527,8 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
@@ -574,10 +568,8 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
@@ -618,10 +610,8 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
@@ -671,10 +661,8 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
@@ -720,10 +708,8 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
@@ -770,10 +756,8 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
@@ -868,10 +852,8 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.Epiloguer;
       import dev.slfc.epilogue.logging.DataLogger;
       import dev.slfc.epilogue.logging.ClassSpecificLogger;
-      import java.lang.invoke.VarHandle;
 
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
-
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }

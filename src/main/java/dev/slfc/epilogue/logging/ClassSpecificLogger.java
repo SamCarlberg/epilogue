@@ -102,20 +102,4 @@ public abstract class ClassSpecificLogger<T> {
     });
     builder.update();
   }
-
-  /**
-   * Retrieves a handle for a private field in the logged class. Returns null if the field does
-   * not exist or could not be accessed.
-   *
-   * @param name the name of the field
-   * @param fieldType the declared type of the field
-   * @return the field handle
-   */
-  protected final VarHandle fieldHandle(String name, Class<?> fieldType) {
-    try {
-      return lookup.findVarHandle(clazz, name, fieldType);
-    } catch (ReflectiveOperationException e) {
-      return null;
-    }
-  }
 }

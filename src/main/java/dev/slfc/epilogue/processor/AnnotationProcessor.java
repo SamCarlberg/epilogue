@@ -338,6 +338,9 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     var loggerFile = processingEnv.getFiler().createSourceFile(loggerClassName);
 
+    var privateFields = loggableFields.stream().filter(e -> e.getModifiers().contains(Modifier.PRIVATE)).toList();
+    boolean requiresVarHandles = !privateFields.isEmpty();
+
     try (var out = new PrintWriter(loggerFile.openWriter())) {
       if (packageName != null) {
         // package com.example;
@@ -351,7 +354,10 @@ public class AnnotationProcessor extends AbstractProcessor {
       out.println("import dev.slfc.epilogue.Epiloguer;");
       out.println("import dev.slfc.epilogue.logging.DataLogger;");
       out.println("import dev.slfc.epilogue.logging.ClassSpecificLogger;");
-      out.println("import java.lang.invoke.VarHandle;");
+      if (requiresVarHandles) {
+        out.println("import java.lang.invoke.MethodHandles;");
+        out.println("import java.lang.invoke.VarHandle;");
+      }
       out.println();
 
       // public class FooLogger implements ClassSpecificLogger<Foo> {
@@ -361,14 +367,33 @@ public class AnnotationProcessor extends AbstractProcessor {
       out.print(simpleClassName);
       out.println("> {");
 
-      for (var loggableField : loggableFields) {
-        if (loggableField.getModifiers().contains(Modifier.PRIVATE)) {
+      if (requiresVarHandles) {
+        for (var privateField : privateFields) {
           // This field needs a VarHandle to access.
           // Cache it in the class to avoid lookups
-          out.println("  private final VarHandle $" + loggableField.getSimpleName() + ";");
+          out.println("  private static final VarHandle $" + privateField.getSimpleName() + ";");
         }
+        out.println();
       }
-      out.println();
+
+      if (requiresVarHandles) {
+        var clazz = simpleClassName + ".class";
+
+        out.println("  static {");
+        out.println("    try {");
+        out.println("      var lookup = MethodHandles.privateLookupIn(" + clazz + ", MethodHandles.lookup());");
+
+        for (var privateField : privateFields) {
+          var fieldName = privateField.getSimpleName();
+          out.println("      $" + fieldName + " = lookup.findVarHandle(" + clazz + ", \"" + fieldName + "\", " + processingEnv.getTypeUtils().erasure(privateField.asType()) + ".class);");
+        }
+
+        out.println("    } catch (ReflectiveOperationException e) {");
+        out.println("      throw new RuntimeException(\"[EPILOGUE] Could not load private fields for logging!\", e);");
+        out.println("    }");
+        out.println("  }");
+        out.println();
+      }
 
       out.print("  public ");
       out.print(loggerSimpleClassName);
@@ -376,15 +401,6 @@ public class AnnotationProcessor extends AbstractProcessor {
       out.print("    super(");
       out.print(simpleClassName);
       out.println(".class);");
-
-      for (var loggableField : loggableFields) {
-        if (loggableField.getModifiers().contains(Modifier.PRIVATE)) {
-          // This field needs a VarHandle to access.
-          // Cache it in the class to avoid lookups
-          var fieldName = loggableField.getSimpleName();
-          out.println("    $" + fieldName + " = fieldHandle(\"" + fieldName + "\", " + processingEnv.getTypeUtils().erasure(loggableField.asType()) + ".class);");
-        }
-      }
       out.println("  }");
       out.println();
 
