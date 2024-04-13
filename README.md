@@ -12,7 +12,7 @@ Annotate the classes you're interested in logging using the `@Epilogue` annotati
 
 By default, an `@Epilogue` annotation on a class will result in logging of every field of a loggable type and every public no-argument method returning a loggable type.
 
-Be aware that some sensors may have blocking reads that force your program to wait until data is received. If Epilogue is set up to call too many of those methods, you may see performance degrade, manifesting as loop time overrun messages in the driverstation. You can alleviate the issue by either marking the offending sensors or methods that read from those sensors as skipped with `@Epilogue(skip = true)` on the field or methods, or by periodically reading from those sensors in a subsystem or robot periodic method and only refer to those cached values in your calculations and in the log configuration.
+Be aware that some sensors may have blocking reads that force your program to wait until data is received. If Epilogue is set up to call too many of those methods, you may see performance degrade, manifesting as loop time overrun messages in the driverstation. You can alleviate the issue by either marking the offending sensors or methods that read from those sensors as skipped with `@Epilogue(importance = NONE)` on the field or methods, or by periodically reading from those sensors in a subsystem or robot periodic method and only refer to those cached values in your calculations and in the log configuration.
 
 ### Annotating
 
@@ -21,7 +21,7 @@ The only annotation you need to use is `@Epilogue`. It can be placed on classes 
 ```java
 @Epilogue(strategy = Strategy.OPT_IN)
 class Drivebase extends SubsystemBase {
-  @Epilogue(skip = true)
+  @Epilogue(importance = NONE)
   private Pose2d lastKnownPosition; // This field will never be logged
 
   @Epilogue(name = "Pose")
