@@ -240,10 +240,6 @@ public class AnnotationProcessor extends AbstractProcessor {
         out.println("package dev.slfc.epilogue;");
         out.println();
 
-        if (isTimedRobot) {
-          out.println("import edu.wpi.first.wpilibj.TimedRobot;");
-        }
-
         loggerClassNames.stream().sorted().forEach(name -> {
           if (!name.contains(".")) {
             // Logger is in the global namespace, don't need to import
