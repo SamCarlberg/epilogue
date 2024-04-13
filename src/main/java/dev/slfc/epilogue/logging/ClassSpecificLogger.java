@@ -3,8 +3,6 @@ package dev.slfc.epilogue.logging;
 import dev.slfc.epilogue.logging.errors.ErrorHandler;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import java.lang.invoke.MethodHandles;
-import java.lang.invoke.VarHandle;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -15,8 +13,6 @@ import java.util.Map;
 @SuppressWarnings("unused") // Used by generated subclasses
 public abstract class ClassSpecificLogger<T> {
   private final Class<T> clazz;
-  private final MethodHandles.Lookup lookup;
-
   // TODO: This will hold onto Sendables that are otherwise no longer referenced by a robot program.
   //       Determine if that's a concern
   // Linked hashmap to maintain insert order
@@ -29,11 +25,6 @@ public abstract class ClassSpecificLogger<T> {
    */
   protected ClassSpecificLogger(Class<T> clazz) {
     this.clazz = clazz;
-    try {
-      lookup = MethodHandles.privateLookupIn(clazz, MethodHandles.lookup());
-    } catch (IllegalAccessException e) {
-      throw new RuntimeException(e);
-    }
   }
 
   /**
