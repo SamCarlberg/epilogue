@@ -931,7 +931,6 @@ class AnnotationProcessorTest {
 
   @Test
   void annotationInheritance() {
-
     String source = """
       package dev.slfc.epilogue;
 
@@ -947,9 +946,9 @@ class AnnotationProcessorTest {
 
       @Epilogue
       public class HelloWorld {
-        /* Logged */ Child child;
-        /* Logged */ GoldenChild goldenChild;
-        /* Logged */ IO io;
+        /* Logged */     Child child;
+        /* Not Logged */ GoldenChild goldenChild;
+        /* Logged */     IO io;
         /* Not logged */ IOImpl ioImpl;
       }
       """;
@@ -971,7 +970,6 @@ class AnnotationProcessorTest {
         public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
             Epiloguer.childLogger.tryUpdate(dataLogger.getSubLogger("child"), object.child, Epiloguer.getConfig().errorHandler);
-            Epiloguer.goldenChildLogger.tryUpdate(dataLogger.getSubLogger("goldenChild"), object.goldenChild, Epiloguer.getConfig().errorHandler);
             Epiloguer.ioLogger.tryUpdate(dataLogger.getSubLogger("io"), object.io, Epiloguer.getConfig().errorHandler);
           }
         }
@@ -986,8 +984,8 @@ class AnnotationProcessorTest {
     assertThat(compilation).succeededWithoutWarnings();
     var generatedFiles = compilation.generatedSourceFiles();
 
-    // 4 loggers + Epiloguer
-    assertEquals(5, generatedFiles.size());
+    // 3 loggers + Epiloguer
+    assertEquals(4, generatedFiles.size());
 
     // first is Epiloguer
     // second is the class-specific logger

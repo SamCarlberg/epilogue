@@ -1,7 +1,6 @@
 package dev.slfc.epilogue;
 
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -22,7 +21,6 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.TYPE})
-@Inherited
 public @interface Epilogue {
   /**
    * The name for the annotated element to be logged as. Does nothing on class-level annotations.
