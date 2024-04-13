@@ -308,7 +308,9 @@ public class AnnotationProcessor extends AbstractProcessor {
               """);
           out.println("  public static void bind(" + robotClassName + " robot) {");
           out.println("    robot.addPeriodic(() -> {");
-          out.println("      " + lowerCamelCase(simpleName(robotClassName)) + "Logger.tryUpdate(config.dataLogger, \"Robot\", robot, Epiloguer.getConfig().errorHandler);");
+          out.println("      long start = System.nanoTime();");
+          out.println("      " + lowerCamelCase(simpleName(robotClassName)) + "Logger.tryUpdate(config.dataLogger, config.root, robot, config.errorHandler);");
+          out.println("      edu.wpi.first.networktables.NetworkTableInstance.getDefault().getEntry(\"Epilogue/Stats/Last Run\").setDouble((System.nanoTime() - start) / 1e6);");
           out.println("    }, robot.getPeriod(), robot.getPeriod() / 2);");
           out.println("  }");
         }

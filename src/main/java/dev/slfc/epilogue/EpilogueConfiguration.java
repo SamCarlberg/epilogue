@@ -28,4 +28,10 @@ public class EpilogueConfiguration {
    * printing an error to the standard output.
    */
   public ErrorHandler errorHandler = new ErrorPrinter();
+
+  /**
+   * The root identifier to use for all logged data. Defaults to "Robot", but can be changed to
+   * any string.
+   */
+  public String root = "Robot";
 }
