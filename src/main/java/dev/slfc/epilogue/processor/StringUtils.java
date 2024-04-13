@@ -13,7 +13,7 @@ public class StringUtils {
     StringBuilder builder = new StringBuilder(str.length());
 
     int i = 0;
-    for (; i < str.length() - 1 && (i == 0 || (Character.isUpperCase(str.charAt(i)) && Character.isUpperCase(str.charAt(i + 1)))); i++) {
+    for (; i < str.length() && (i == 0 || i == str.length() - 1 || (Character.isUpperCase(str.charAt(i)) && Character.isUpperCase(str.charAt(i + 1)))); i++) {
       builder.append(Character.toLowerCase(str.charAt(i)));
     }
 
