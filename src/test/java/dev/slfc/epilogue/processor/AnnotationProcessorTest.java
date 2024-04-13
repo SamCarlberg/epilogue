@@ -282,6 +282,10 @@ class AnnotationProcessorTest {
         byte x;        // Should be logged
         byte[] arr1;   // Should be logged
         byte[][] arr2; // Should not be logged
+
+        public byte getX() { return x; }
+        public byte[] getArr1() { return arr1; }
+        public byte[][] getArr2() { return arr2; }
       }
       """;
 
@@ -303,6 +307,8 @@ class AnnotationProcessorTest {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
             dataLogger.log("x", object.x);
             dataLogger.log("arr1", object.arr1);
+            dataLogger.log("getX", object.getX());
+            dataLogger.log("getArr1", object.getArr1());
           }
         }
       }
@@ -321,6 +327,10 @@ class AnnotationProcessorTest {
         char x;        // Should be logged
         char[] arr1;   // Should not be logged
         char[][] arr2; // Should not be logged
+
+        public char getX() { return x; }
+        public char[] getArr1() { return arr1; }
+        public char[][] getArr2() { return arr2; }
       }
       """;
 
@@ -341,6 +351,7 @@ class AnnotationProcessorTest {
         public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
             dataLogger.log("x", object.x);
+            dataLogger.log("getX", object.getX());
           }
         }
       }
@@ -356,9 +367,13 @@ class AnnotationProcessorTest {
 
       @Epilogue
       class HelloWorld {
-        char x;        // Should be logged
-        char[] arr1;   // Should not be logged
-        char[][] arr2; // Should not be logged
+        short x;        // Should be logged
+        short[] arr1;   // Should not be logged
+        short[][] arr2; // Should not be logged
+
+        public short getX() { return x; }
+        public short[] getArr1() { return arr1; }
+        public short[][] getArr2() { return arr2; }
       }
       """;
 
@@ -379,6 +394,7 @@ class AnnotationProcessorTest {
         public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
             dataLogger.log("x", object.x);
+            dataLogger.log("getX", object.getX());
           }
         }
       }
@@ -395,8 +411,12 @@ class AnnotationProcessorTest {
       @Epilogue
       class HelloWorld {
         int x;           // Should be logged
-        int[] intArr1;   // Should be logged
-        int[][] intArr2; // Should not be logged
+        int[] arr1;   // Should be logged
+        int[][] arr2; // Should not be logged
+
+        public int getX() { return x; }
+        public int[] getArr1() { return arr1; }
+        public int[][] getArr2() { return arr2; }
       }
       """;
 
@@ -417,7 +437,9 @@ class AnnotationProcessorTest {
         public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
             dataLogger.log("x", object.x);
-            dataLogger.log("intArr1", object.intArr1);
+            dataLogger.log("arr1", object.arr1);
+            dataLogger.log("getX", object.getX());
+            dataLogger.log("getArr1", object.getArr1());
           }
         }
       }
@@ -436,6 +458,10 @@ class AnnotationProcessorTest {
         long x;        // Should be logged
         long[] arr1;   // Should be logged
         long[][] arr2; // Should not be logged
+
+        public long getX() { return x; }
+        public long[] getArr1() { return arr1; }
+        public long[][] getArr2() { return arr2; }
       }
       """;
 
@@ -457,6 +483,8 @@ class AnnotationProcessorTest {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
             dataLogger.log("x", object.x);
             dataLogger.log("arr1", object.arr1);
+            dataLogger.log("getX", object.getX());
+            dataLogger.log("getArr1", object.getArr1());
           }
         }
       }
@@ -475,6 +503,10 @@ class AnnotationProcessorTest {
         float x;        // Should be logged
         float[] arr1;   // Should be logged
         float[][] arr2; // Should not be logged
+
+        public float getX() { return x; }
+        public float[] getArr1() { return arr1; }
+        public float[][] getArr2() { return arr2; }
       }
       """;
 
@@ -496,6 +528,8 @@ class AnnotationProcessorTest {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
             dataLogger.log("x", object.x);
             dataLogger.log("arr1", object.arr1);
+            dataLogger.log("getX", object.getX());
+            dataLogger.log("getArr1", object.getArr1());
           }
         }
       }
@@ -517,6 +551,10 @@ class AnnotationProcessorTest {
         double[] arr1;   // Should be logged
         double[][] arr2; // Should not be logged
         List<Double> list; // Should not be logged
+
+        public double getX() { return x; }
+        public double[] getArr1() { return arr1; }
+        public double[][] getArr2() { return arr2; }
       }
       """;
 
@@ -538,6 +576,8 @@ class AnnotationProcessorTest {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
             dataLogger.log("x", object.x);
             dataLogger.log("arr1", object.arr1);
+            dataLogger.log("getX", object.getX());
+            dataLogger.log("getArr1", object.getArr1());
           }
         }
       }
@@ -558,6 +598,10 @@ class AnnotationProcessorTest {
         boolean[] arr1;   // Should be logged
         boolean[][] arr2; // Should not be logged
         List<Boolean> list; // Should not be logged
+
+        public boolean getX() { return x; }
+        public boolean[] getArr1() { return arr1; }
+        public boolean[][] getArr2() { return arr2; }
       }
       """;
 
@@ -579,6 +623,8 @@ class AnnotationProcessorTest {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
             dataLogger.log("x", object.x);
             dataLogger.log("arr1", object.arr1);
+            dataLogger.log("getX", object.getX());
+            dataLogger.log("getArr1", object.getArr1());
           }
         }
       }
@@ -596,10 +642,14 @@ class AnnotationProcessorTest {
 
       @Epilogue
       class HelloWorld {
-        String str;         // Should be logged
-        String[] strArr1;   // Should be logged
-        String[][] strArr2; // Should not be logged
+        String x;         // Should be logged
+        String[] arr1;   // Should be logged
+        String[][] arr2; // Should not be logged
         List<String> list;  // Should be logged
+
+        public String getX() { return x; }
+        public String[] getArr1() { return arr1; }
+        public String[][] getArr2() { return arr2; }
       }
       """;
 
@@ -619,9 +669,11 @@ class AnnotationProcessorTest {
         @Override
         public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log("str", object.str);
-            dataLogger.log("strArr1", object.strArr1);
+            dataLogger.log("x", object.x);
+            dataLogger.log("arr1", object.arr1);
             dataLogger.log("list", (object.list).toArray(java.lang.String[]::new));
+            dataLogger.log("getX", object.getX());
+            dataLogger.log("getArr1", object.getArr1());
           }
         }
       }
@@ -651,6 +703,10 @@ class AnnotationProcessorTest {
         Structable[] arr1;   // Should be logged
         Structable[][] arr2; // Should not be logged
         List<Structable> list; // Should be logged
+
+        public Structable getX() { return x; }
+        public Structable[] getArr1() { return arr1; }
+        public Structable[][] getArr2() { return arr2; }
       }
       """;
 
@@ -673,6 +729,8 @@ class AnnotationProcessorTest {
             dataLogger.log("x", object.x, dev.slfc.epilogue.HelloWorld.Structable.struct);
             dataLogger.log("arr1", object.arr1, dev.slfc.epilogue.HelloWorld.Structable.struct);
             dataLogger.log("list", (object.list).toArray(dev.slfc.epilogue.HelloWorld.Structable[]::new), dev.slfc.epilogue.HelloWorld.Structable.struct);
+            dataLogger.log("getX", object.getX(), dev.slfc.epilogue.HelloWorld.Structable.struct);
+            dataLogger.log("getArr1", object.getArr1(), dev.slfc.epilogue.HelloWorld.Structable.struct);
           }
         }
       }
