@@ -11,7 +11,12 @@ public class SubLogger implements DataLogger {
   private final Map<String, SubLogger> subLoggers = new HashMap<>();
 
   public SubLogger(String prefix, DataLogger impl) {
-    this.prefix = prefix + "/";
+    // Add a trailing slash if not already present
+    if (prefix.endsWith("/")) {
+      this.prefix = prefix;
+    } else {
+      this.prefix = prefix + "/";
+    }
     this.impl = impl;
   }
 
