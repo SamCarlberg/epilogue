@@ -139,6 +139,8 @@ public class Robot extends TimedRobot {
 
 ### Introductory
 
+This example will log robot data to the datalog file on the roboRIO. The logged data includes the values of `previousPose`, `getPose()` and `velocity` (which will appear in terms of meters per second). 
+
 ```java
 @Epilogue
 class Robot extends TimedRobot {
