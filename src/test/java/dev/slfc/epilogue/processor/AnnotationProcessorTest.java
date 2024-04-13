@@ -40,9 +40,9 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/x", object.x);
+            dataLogger.log("x", object.x);
           }
         }
       }
@@ -77,10 +77,10 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/x", object.x);
-            dataLogger.log(identifier + "/y", object.y);
+            dataLogger.log("x", object.x);
+            dataLogger.log("y", object.y);
           }
         }
       }
@@ -127,9 +127,9 @@ class AnnotationProcessorTest {
         }
           
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/x", (double) $x.get(object));
+            dataLogger.log("x", (double) $x.get(object));
           }
         }
       }
@@ -176,9 +176,9 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            logSendable(dataLogger, identifier + "/chooser", (edu.wpi.first.wpilibj.smartdashboard.SendableChooser<java.lang.String>) $chooser.get(object));
+            logSendable(dataLogger.getSubLogger("chooser"), (edu.wpi.first.wpilibj.smartdashboard.SendableChooser<java.lang.String>) $chooser.get(object));
           }
         }
       }
@@ -215,15 +215,15 @@ class AnnotationProcessorTest {
         }
         
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/low", object.low);
+            dataLogger.log("low", object.low);
           }
           if (Epiloguer.shouldLog(Epilogue.Importance.INFO)) {
-            dataLogger.log(identifier + "/medium", object.medium);
+            dataLogger.log("medium", object.medium);
           }
           if (Epiloguer.shouldLog(Epilogue.Importance.CRITICAL)) {
-            dataLogger.log(identifier + "/high", object.high);
+            dataLogger.log("high", object.high);
           }
         }
       }
@@ -261,9 +261,9 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/enumValue", object.enumValue);
+            dataLogger.log("enumValue", object.enumValue);
           }
         }
       }
@@ -299,10 +299,10 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/x", object.x);
-            dataLogger.log(identifier + "/arr1", object.arr1);
+            dataLogger.log("x", object.x);
+            dataLogger.log("arr1", object.arr1);
           }
         }
       }
@@ -338,9 +338,9 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/x", object.x);
+            dataLogger.log("x", object.x);
           }
         }
       }
@@ -376,9 +376,9 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/x", object.x);
+            dataLogger.log("x", object.x);
           }
         }
       }
@@ -414,10 +414,10 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/x", object.x);
-            dataLogger.log(identifier + "/intArr1", object.intArr1);
+            dataLogger.log("x", object.x);
+            dataLogger.log("intArr1", object.intArr1);
           }
         }
       }
@@ -453,10 +453,10 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/x", object.x);
-            dataLogger.log(identifier + "/arr1", object.arr1);
+            dataLogger.log("x", object.x);
+            dataLogger.log("arr1", object.arr1);
           }
         }
       }
@@ -492,10 +492,10 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/x", object.x);
-            dataLogger.log(identifier + "/arr1", object.arr1);
+            dataLogger.log("x", object.x);
+            dataLogger.log("arr1", object.arr1);
           }
         }
       }
@@ -534,10 +534,10 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/x", object.x);
-            dataLogger.log(identifier + "/arr1", object.arr1);
+            dataLogger.log("x", object.x);
+            dataLogger.log("arr1", object.arr1);
           }
         }
       }
@@ -575,10 +575,10 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/x", object.x);
-            dataLogger.log(identifier + "/arr1", object.arr1);
+            dataLogger.log("x", object.x);
+            dataLogger.log("arr1", object.arr1);
           }
         }
       }
@@ -617,11 +617,11 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/str", object.str);
-            dataLogger.log(identifier + "/strArr1", object.strArr1);
-            dataLogger.log(identifier + "/list", (object.list).toArray(java.lang.String[]::new));
+            dataLogger.log("str", object.str);
+            dataLogger.log("strArr1", object.strArr1);
+            dataLogger.log("list", (object.list).toArray(java.lang.String[]::new));
           }
         }
       }
@@ -668,11 +668,11 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/x", object.x, dev.slfc.epilogue.HelloWorld.Structable.struct);
-            dataLogger.log(identifier + "/arr1", object.arr1, dev.slfc.epilogue.HelloWorld.Structable.struct);
-            dataLogger.log(identifier + "/list", (object.list).toArray(dev.slfc.epilogue.HelloWorld.Structable[]::new), dev.slfc.epilogue.HelloWorld.Structable.struct);
+            dataLogger.log("x", object.x, dev.slfc.epilogue.HelloWorld.Structable.struct);
+            dataLogger.log("arr1", object.arr1, dev.slfc.epilogue.HelloWorld.Structable.struct);
+            dataLogger.log("list", (object.list).toArray(dev.slfc.epilogue.HelloWorld.Structable[]::new), dev.slfc.epilogue.HelloWorld.Structable.struct);
           }
         }
       }
@@ -715,12 +715,12 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/list", (object.list).toArray(java.lang.String[]::new));
-            dataLogger.log(identifier + "/set", (object.set).toArray(java.lang.String[]::new));
-            dataLogger.log(identifier + "/queue", (object.queue).toArray(java.lang.String[]::new));
-            dataLogger.log(identifier + "/stack", (object.stack).toArray(java.lang.String[]::new));
+            dataLogger.log("list", (object.list).toArray(java.lang.String[]::new));
+            dataLogger.log("set", (object.set).toArray(java.lang.String[]::new));
+            dataLogger.log("queue", (object.queue).toArray(java.lang.String[]::new));
+            dataLogger.log("stack", (object.stack).toArray(java.lang.String[]::new));
           }
         }
       }
@@ -763,7 +763,7 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
         }
       }
       """;
@@ -859,10 +859,10 @@ class AnnotationProcessorTest {
         }
 
         @Override
-        public void update(DataLogger dataLogger, String identifier, HelloWorld object) {
+        public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log(identifier + "/value", object.value);
-            dataLogger.log(identifier + "/upcast", object.upcast());
+            dataLogger.log("value", object.value);
+            dataLogger.log("upcast", object.upcast());
           }
         }
       }

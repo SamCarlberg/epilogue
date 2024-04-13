@@ -309,7 +309,7 @@ public class AnnotationProcessor extends AbstractProcessor {
           out.println("  public static void bind(" + robotClassName + " robot) {");
           out.println("    robot.addPeriodic(() -> {");
           out.println("      long start = System.nanoTime();");
-          out.println("      " + lowerCamelCase(simpleName(robotClassName)) + "Logger.tryUpdate(config.dataLogger, config.root, robot, config.errorHandler);");
+          out.println("      " + lowerCamelCase(simpleName(robotClassName)) + "Logger.tryUpdate(config.dataLogger.getSubLogger(config.root), robot, config.errorHandler);");
           out.println("      edu.wpi.first.networktables.NetworkTableInstance.getDefault().getEntry(\"Epilogue/Stats/Last Run\").setDouble((System.nanoTime() - start) / 1e6);");
           out.println("    }, robot.getPeriod(), robot.getPeriod() / 2);");
           out.println("  }");
@@ -408,11 +408,9 @@ public class AnnotationProcessor extends AbstractProcessor {
 
 
       // @Override
-      // public void update(DataLogger dataLogger, String identifier, Foo object) {
+      // public void update(DataLogger dataLogger, Foo object) {
       out.println("  @Override");
-      out.print("  public void update(DataLogger dataLogger, String identifier, ");
-      out.print(simpleClassName);
-      out.println(" object) {");
+      out.println("  public void update(DataLogger dataLogger, " + simpleClassName + " object) {");
 
       // [log fields]
       // [log methods]
@@ -653,13 +651,13 @@ public class AnnotationProcessor extends AbstractProcessor {
         !processingEnv.getTypeUtils().isAssignable(dataType, subsystemType)
     ) {
       // Log as sendable
-      out.println("      logSendable(dataLogger, identifier + \"/" + loggedName + "\", " + access + ");");
+      out.println("      logSendable(dataLogger.getSubLogger(\"" + loggedName + "\"), " + access + ");");
     } else if (reflectedType != null && reflectedType.getAnnotation(Epilogue.class) != null) {
       // Log nested fields that support Epilogue
-      out.println("      Epiloguer." + lowerCamelCase(simpleName(reflectedType.getQualifiedName().toString())) + "Logger.tryUpdate(dataLogger, identifier + \"/" + loggedName + "\", " + access + ", Epiloguer.getConfig().errorHandler);");
+      out.println("      Epiloguer." + lowerCamelCase(simpleName(reflectedType.getQualifiedName().toString())) + "Logger.tryUpdate(dataLogger.getSubLogger(\"" + loggedName + "\"), " + access + ", Epiloguer.getConfig().errorHandler);");
     } else if (hasStructDeclaration(reflectedType)) {
       // Log with struct serialization
-      out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ", " + reflectedType.getQualifiedName() + ".struct);");
+      out.println("      dataLogger.log(\"" + loggedName + "\", " + access + ", " + reflectedType.getQualifiedName() + ".struct);");
     } else if (dataType.getKind() == TypeKind.ARRAY) {
       // Invoke with information about the array type
       // This takes advantage of the fact that the array log calls have EXACTLY the same shape as
@@ -674,20 +672,20 @@ public class AnnotationProcessor extends AbstractProcessor {
       var toArry = "(" + access + ").toArray(" + componentType + "[]::new)";
       if (hasStructDeclaration(getTypeElement(componentType))) {
         // Logged as an array of structs, need to provide the serde object
-        out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + toArry + ", " + processingEnv.getTypeUtils().erasure(componentType) + ".struct);");
+        out.println("      dataLogger.log(\"" + loggedName + "\", " + toArry + ", " + processingEnv.getTypeUtils().erasure(componentType) + ".struct);");
       } else {
         // Not structs, can use one of the `log` methods and let the overloads figure it out
-        out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + toArry + ");");
+        out.println("      dataLogger.log(\"" + loggedName + "\", " + toArry + ");");
       }
     } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getTypeUtils().erasure(measureType))) {
       // Measurement like Measure<Voltage>
-      out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
+      out.println("      dataLogger.log(\"" + loggedName + "\", " + access + ");");
     } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getTypeUtils().erasure(processingEnv.getElementUtils().getTypeElement("java.lang.Enum").asType()))) {
       // Enum
-      out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
+      out.println("      dataLogger.log(\"" + loggedName + "\", " + access + ");");
     } else if (processingEnv.getTypeUtils().isAssignable(dataType, processingEnv.getElementUtils().getTypeElement("java.lang.String").asType())) {
       // String
-      out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
+      out.println("      dataLogger.log(\"" + loggedName + "\", " + access + ");");
     } else {
       switch (dataType.toString()) {
         case "byte", "char", "short", "int", "long", "float", "double", "boolean",
@@ -695,7 +693,7 @@ public class AnnotationProcessor extends AbstractProcessor {
             "java.lang.String", "java.lang.String[]",
             "edu.wpi.first.wpilibj.XboxController",
             "edu.wpi.first.wpilibj.Joystick" ->
-            out.println("      dataLogger.log(identifier + \"/" + loggedName + "\", " + access + ");");
+            out.println("      dataLogger.log(\"" + loggedName + "\", " + access + ");");
         default -> {
           var reflectedDataType = getTypeElement(dataType);
           out.println("      // TODO: Support " + dataType + " (" + (reflectedDataType == null ? "<unknown type>" : reflectedDataType.getQualifiedName()) + ") for " + codeName);

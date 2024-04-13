@@ -17,6 +17,7 @@ public class LazyLogger implements DataLogger {
   // Keep a record of the most recent value written to each entry
   // Note that this may duplicate a lot of data, and will box primitives.
   private final Map<String, Object> previousValues = new HashMap<>();
+  private final Map<String, SubLogger> subLoggers = new HashMap<>();
 
   /**
    *
@@ -30,6 +31,11 @@ public class LazyLogger implements DataLogger {
   public DataLogger lazy() {
     // Already lazy, don't need to wrap it again
     return this;
+  }
+
+  @Override
+  public DataLogger getSubLogger(String path) {
+    return subLoggers.computeIfAbsent(path, k -> new SubLogger(k, this));
   }
 
   @Override

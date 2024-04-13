@@ -19,17 +19,15 @@ import java.util.function.Supplier;
  */
 public class LogBackedSendableBuilder implements SendableBuilder {
   private final DataLogger logger;
-  private final String prefix;
   private final Collection<Runnable> updates = new ArrayList<>();
 
-  public LogBackedSendableBuilder(DataLogger logger, String prefix) {
+  public LogBackedSendableBuilder(DataLogger logger) {
     this.logger = logger;
-    this.prefix = prefix;
   }
 
   @Override
   public void setSmartDashboardType(String type) {
-    logger.log(prefix + "/.type", type);
+    logger.log(".type", type);
   }
 
   @Override
@@ -44,112 +42,126 @@ public class LogBackedSendableBuilder implements SendableBuilder {
 
   @Override
   public void addBooleanProperty(String key, BooleanSupplier getter, BooleanConsumer setter) {
-    updates.add(() -> logger.log(prefix + "/" + key, getter.getAsBoolean()));
+    updates.add(() -> logger.log(key, getter.getAsBoolean()));
   }
 
   @Override
   public void publishConstBoolean(String key, boolean value) {
-    logger.log(prefix + "/" + key, value);
+    logger.log(key, value);
   }
 
   @Override
   public void addIntegerProperty(String key, LongSupplier getter, LongConsumer setter) {
-    updates.add(() -> logger.log(prefix + "/" + key, getter.getAsLong()));
+    updates.add(() -> logger.log(key, getter.getAsLong()));
   }
 
   @Override
   public void publishConstInteger(String key, long value) {
-    logger.log(prefix + "/" + key, value);
+    logger.log(key, value);
   }
 
   @Override
   public void addFloatProperty(String key, FloatSupplier getter, FloatConsumer setter) {
-    updates.add(() -> logger.log(prefix + "/" + key, getter.getAsFloat()));
+    updates.add(() -> logger.log(key, getter.getAsFloat()));
   }
 
   @Override
   public void publishConstFloat(String key, float value) {
-    logger.log(prefix + "/" + key, value);
+    logger.log(key, value);
   }
 
   @Override
   public void addDoubleProperty(String key, DoubleSupplier getter, DoubleConsumer setter) {
-    updates.add(() -> logger.log(prefix + "/" + key, getter.getAsDouble()));
+    updates.add(() -> logger.log(key, getter.getAsDouble()));
   }
 
   @Override
   public void publishConstDouble(String key, double value) {
-    logger.log(prefix + "/" + key, value);
+    logger.log(key, value);
   }
 
   @Override
   public void addStringProperty(String key, Supplier<String> getter, Consumer<String> setter) {
-    if (getter != null) updates.add(() -> logger.log(prefix + "/" + key, getter.get()));
+    if (getter != null) {
+      updates.add(() -> logger.log(key, getter.get()));
+    }
   }
 
   @Override
   public void publishConstString(String key, String value) {
-    logger.log(prefix + "/" + key, value);
+    logger.log(key, value);
   }
 
   @Override
   public void addBooleanArrayProperty(String key, Supplier<boolean[]> getter, Consumer<boolean[]> setter) {
-    if (getter != null) updates.add(() -> logger.log(prefix + "/" + key, getter.get()));
+    if (getter != null) {
+      updates.add(() -> logger.log(key, getter.get()));
+    }
   }
 
   @Override
   public void publishConstBooleanArray(String key, boolean[] value) {
-    logger.log(prefix + "/" + key, value);
+    logger.log(key, value);
   }
 
   @Override
   public void addIntegerArrayProperty(String key, Supplier<long[]> getter, Consumer<long[]> setter) {
-    if (getter != null) updates.add(() -> logger.log(prefix + "/" + key, getter.get()));
+    if (getter != null) {
+      updates.add(() -> logger.log(key, getter.get()));
+    }
   }
 
   @Override
   public void publishConstIntegerArray(String key, long[] value) {
-    logger.log(prefix + "/" + key, value);
+    logger.log(key, value);
   }
 
   @Override
   public void addFloatArrayProperty(String key, Supplier<float[]> getter, Consumer<float[]> setter) {
-    if (getter != null) updates.add(() -> logger.log(prefix + "/" + key, getter.get()));
+    if (getter != null) {
+      updates.add(() -> logger.log(key, getter.get()));
+    }
   }
 
   @Override
   public void publishConstFloatArray(String key, float[] value) {
-    logger.log(prefix + "/" + key, value);
+    logger.log(key, value);
   }
 
   @Override
   public void addDoubleArrayProperty(String key, Supplier<double[]> getter, Consumer<double[]> setter) {
-    if (getter != null) updates.add(() -> logger.log(prefix + "/" + key, getter.get()));
+    if (getter != null) {
+      updates.add(() -> logger.log(key, getter.get()));
+    }
   }
 
   @Override
   public void publishConstDoubleArray(String key, double[] value) {
-    logger.log(prefix + "/" + key, value);
+    logger.log(key, value);
   }
 
   @Override
   public void addStringArrayProperty(String key, Supplier<String[]> getter, Consumer<String[]> setter) {
-    if (getter != null) updates.add(() -> logger.log(prefix + "/" + key, getter.get()));
+    if (getter != null) {
+      updates.add(() -> logger.log(key, getter.get()));
+    }
   }
 
   @Override
   public void publishConstStringArray(String key, String[] value) {
-    logger.log(prefix + "/" + key, value);
+    logger.log(key, value);
   }
 
   @Override
   public void addRawProperty(String key, String typeString, Supplier<byte[]> getter, Consumer<byte[]> setter) {
-    if (getter != null) updates.add(() -> logger.log(prefix + "/" + key, getter.get()));
+    if (getter != null) {
+      updates.add(() -> logger.log(key, getter.get()));
+    }
   }
 
   @Override
   public void publishConstRaw(String key, String typeString, byte[] value) {
-    logger.log(prefix + "/" + key, value);
+    logger.log(key, value);
   }
 
   @Override

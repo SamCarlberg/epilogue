@@ -29,6 +29,7 @@ import java.util.function.BiFunction;
 public class FileLogger implements DataLogger {
   private final DataLog dataLog;
   private final Map<String, DataLogEntry> entries = new HashMap<>();
+  private final Map<String, SubLogger> subLoggers = new HashMap<>();
 
   /**
    * Creates a new file logger.
@@ -37,6 +38,11 @@ public class FileLogger implements DataLogger {
    */
   public FileLogger(DataLog dataLog) {
     this.dataLog = requireNonNullParam(dataLog, "dataLog", "FileLogger");
+  }
+
+  @Override
+  public DataLogger getSubLogger(String path) {
+    return subLoggers.computeIfAbsent(path, k -> new SubLogger(k, this));
   }
 
   @SuppressWarnings("unchecked")

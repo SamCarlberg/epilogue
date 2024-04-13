@@ -37,26 +37,20 @@ public abstract class ClassSpecificLogger<T> {
   }
 
   /**
-   * Updates an object's fields in a data log under the given identifier.
+   * Updates an object's fields in a data log.
    *
    * @param dataLogger the logger to update
-   * @param identifier the identifier for the object. Nested attributes will be appended using a "/"
-   *                   delimiter
    * @param object the object to update in the log
    */
-  protected abstract void update(DataLogger dataLogger, String identifier, T object);
+  protected abstract void update(DataLogger dataLogger, T object);
 
-  public final void tryUpdate(
-      DataLogger dataLogger,
-      String identifier,
-      T object,
-      ErrorHandler errorHandler) {
+  public final void tryUpdate(DataLogger dataLogger, T object, ErrorHandler errorHandler) {
     if (disabled) {
       return;
     }
 
     try {
-      update(dataLogger, identifier, object);
+      update(dataLogger, object);
     } catch (Exception e) {
       errorHandler.handle(e, this);
     }
@@ -90,13 +84,13 @@ public abstract class ClassSpecificLogger<T> {
     return clazz;
   }
 
-  protected void logSendable(DataLogger dataLogger, String identifier, Sendable sendable) {
+  protected void logSendable(DataLogger dataLogger, Sendable sendable) {
     if (sendable == null) {
       return;
     }
 
     var builder = sendables.computeIfAbsent(sendable, (s) -> {
-      var b = new LogBackedSendableBuilder(dataLogger, identifier);
+      var b = new LogBackedSendableBuilder(dataLogger);
       s.initSendable(b);
       return b;
     });

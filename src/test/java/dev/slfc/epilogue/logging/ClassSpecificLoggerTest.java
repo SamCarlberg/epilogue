@@ -16,11 +16,11 @@ class ClassSpecificLoggerTest {
       }
 
       @Override
-      protected void update(DataLogger dataLogger, String identifier, Point2d object) {
+      protected void update(DataLogger dataLogger, Point2d object) {
         try {
-          dataLogger.log(identifier + "/x", object.x);
-          dataLogger.log(identifier + "/y", object.y);
-          dataLogger.log(identifier + "/dim", object.dim);
+          dataLogger.log("x", object.x);
+          dataLogger.log("y", object.y);
+          dataLogger.log("dim", object.dim);
         } catch (Exception e) {
           throw new RuntimeException(e);
         }
@@ -33,7 +33,7 @@ class ClassSpecificLoggerTest {
     var point = new Point2d(1, 4, 2);
     var logger = new Point2d.Logger();
     var dataLog = new TestLogger();
-    logger.update(dataLog, "Point", point);
+    logger.update(dataLog.getSubLogger("Point"), point);
 
     assertEquals(
         List.of(

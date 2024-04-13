@@ -28,9 +28,15 @@ public class NTDataLogger implements DataLogger {
   private final NetworkTableInstance nt;
 
   private final Map<String, Publisher> publishers = new HashMap<>();
+  private final Map<String, SubLogger> subLoggers = new HashMap<>();
 
   public NTDataLogger(NetworkTableInstance nt) {
     this.nt = nt;
+  }
+
+  @Override
+  public DataLogger getSubLogger(String path) {
+    return subLoggers.computeIfAbsent(path, k -> new SubLogger(k, this));
   }
 
   @Override

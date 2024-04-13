@@ -22,6 +22,8 @@ public interface DataLogger {
     return new LazyLogger(this);
   }
 
+  DataLogger getSubLogger(String path);
+
   void log(String identifier, int value);
 
   void log(String identifier, long value);
