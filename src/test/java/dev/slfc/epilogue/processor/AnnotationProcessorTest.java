@@ -19,7 +19,7 @@ class AnnotationProcessorTest {
   void simple() {
     String source = """
       package dev.slfc.epilogue;
-      
+
       @Epilogue
       class HelloWorld {
         double x;
@@ -93,7 +93,7 @@ class AnnotationProcessorTest {
   void privateFields() {
     String source = """
       package dev.slfc.epilogue;
-      
+
       @Epilogue
       class HelloWorld {
         private double x;
@@ -109,10 +109,10 @@ class AnnotationProcessorTest {
       import dev.slfc.epilogue.logging.DataLogger;
       import java.lang.invoke.MethodHandles;
       import java.lang.invoke.VarHandle;
-          
+
       public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
         private static final VarHandle $x;
-        
+
         static {
           try {
             var lookup = MethodHandles.privateLookupIn(HelloWorld.class, MethodHandles.lookup());
@@ -121,11 +121,11 @@ class AnnotationProcessorTest {
             throw new RuntimeException("[EPILOGUE] Could not load private fields for logging!", e);
           }
         }
-          
+
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
-          
+
         @Override
         public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
@@ -213,7 +213,7 @@ class AnnotationProcessorTest {
         public HelloWorldLogger() {
           super(HelloWorld.class);
         }
-        
+
         @Override
         public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
@@ -542,7 +542,7 @@ class AnnotationProcessorTest {
   void doubles() {
     String source = """
       package dev.slfc.epilogue;
-      
+
       import java.util.List;
 
       @Epilogue
@@ -637,7 +637,7 @@ class AnnotationProcessorTest {
   void strings() {
     String source = """
       package dev.slfc.epilogue;
-      
+
       import java.util.List;
 
       @Epilogue
@@ -855,7 +855,7 @@ class AnnotationProcessorTest {
 
         @Epilogue
         public static String publicStaticMethod() { return ""; }
-        
+
         @Epilogue
         private static String privateStaticMethod() { return ""; }
 
@@ -938,7 +938,7 @@ class AnnotationProcessorTest {
       class Child {}
 
       class GoldenChild extends Child {} // inherits the @Epilogue annotation from the parent
-      
+
       @Epilogue
       interface IO {}
 

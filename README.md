@@ -188,11 +188,11 @@ class Robot extends TimedRobot {
 
   // Not explicitly configured. Therefore, per the class-level default, this is considered critical
   Measure<Velocity<Distance>> velocity();
-  
+
   // This field is utterly unimportant and should never be logged
   @Epilogue(importance = Epilogue.Importance.NONE)
   private double ignored;
-  
+
   @Override
   public void robotInit() {
     Epiloguer.configure(config -> {
