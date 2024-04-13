@@ -51,6 +51,12 @@ The data types supported by Epilogue are:
 -  `boolean[]` 
 -  `String` 
 -  `String[]`
+- `StructSerializable`
+- `StructSerializable[]`
+- `Collection<String>`
+- `Collection<StructSerializable>`
+- `Enum` values (logged using the enum constant name)
+- `Measure` values (logged as doubles in terms of their base units)
 -  `Sendable`
   - Except for `Command`, which would never log anything meaningful,
   - And `Subsystem`, which is better off logging using Epilogue instead of the default sendable implementation
