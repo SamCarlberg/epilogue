@@ -2,6 +2,7 @@ package dev.slfc.epilogue.processor;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.List;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
@@ -29,11 +30,7 @@ public class EpiloguerGenerator {
    * @param mainRobotClass the main robot class. May be null. Used to generate a {@code bind()}
    *                       method to add a callback hook to a TimedRobot to log itself.
    */
-  public void writeEpiloguerFile(List<String> loggerClassNames, TypeElement mainRobotClass) {
-    final String robotClassName = mainRobotClass == null ? null : mainRobotClass.getQualifiedName().toString();
-    final var timedRobot = processingEnv.getElementUtils().getTypeElement("edu.wpi.first.wpilibj.TimedRobot").asType();
-    final boolean isTimedRobot = mainRobotClass != null && processingEnv.getTypeUtils().isAssignable(mainRobotClass.asType(), timedRobot);
-
+  public void writeEpiloguerFile(List<String> loggerClassNames, Collection<TypeElement> mainRobotClasses) {
     try {
       var centralStore = processingEnv.getFiler().createSourceFile("dev.slfc.epilogue.Epiloguer");
 
@@ -91,25 +88,29 @@ public class EpiloguerGenerator {
             """.stripTrailing());
 
         // Only generate a binding if the robot class is a TimedRobot
-        if (isTimedRobot) {
-          out.println();
-          out.print("""
-                /**
-                 * Binds Epilogue updates to a timed robot's update period. Log calls will be made at the
-                 * same update rate as the robot's loop function, but will be offset by a full phase
-                 * (for example, a 20ms update rate but 10ms offset from the main loop invocation) to
-                 * help avoid high CPU loads. However, this does mean that any logged data that reads
-                 * directly from sensors will be slightly different from data used in the main robot
-                 * loop.
-                 */
-              """);
-          out.println("  public static void bind(" + robotClassName + " robot) {");
-          out.println("    robot.addPeriodic(() -> {");
-          out.println("      long start = System.nanoTime();");
-          out.println("      " + StringUtils.lowerCamelCase(StringUtils.simpleName(robotClassName)) + "Logger.tryUpdate(config.dataLogger.getSubLogger(config.root), robot, config.errorHandler);");
-          out.println("      edu.wpi.first.networktables.NetworkTableInstance.getDefault().getEntry(\"Epilogue/Stats/Last Run\").setDouble((System.nanoTime() - start) / 1e6);");
-          out.println("    }, robot.getPeriod(), robot.getPeriod() / 2);");
-          out.println("  }");
+        if (!mainRobotClasses.isEmpty()) {
+          for (TypeElement mainRobotClass : mainRobotClasses) {
+            String robotClassName = mainRobotClass.getQualifiedName().toString();
+
+            out.println();
+            out.print("""
+                  /**
+                   * Binds Epilogue updates to a timed robot's update period. Log calls will be made at the
+                   * same update rate as the robot's loop function, but will be offset by a full phase
+                   * (for example, a 20ms update rate but 10ms offset from the main loop invocation) to
+                   * help avoid high CPU loads. However, this does mean that any logged data that reads
+                   * directly from sensors will be slightly different from data used in the main robot
+                   * loop.
+                   */
+                """);
+            out.println("  public static void bind(" + robotClassName + " robot) {");
+            out.println("    robot.addPeriodic(() -> {");
+            out.println("      long start = System.nanoTime();");
+            out.println("      " + StringUtils.lowerCamelCase(StringUtils.simpleName(robotClassName)) + "Logger.tryUpdate(config.dataLogger.getSubLogger(config.root), robot, config.errorHandler);");
+            out.println("      edu.wpi.first.networktables.NetworkTableInstance.getDefault().getEntry(\"Epilogue/Stats/Last Run\").setDouble((System.nanoTime() - start) / 1e6);");
+            out.println("    }, robot.getPeriod(), robot.getPeriod() / 2);");
+            out.println("  }");
+          }
         }
 
         out.println("}");

@@ -4,6 +4,7 @@ import com.google.auto.service.AutoService;
 import dev.slfc.epilogue.Epilogue;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.AbstractProcessor;
@@ -57,11 +58,9 @@ public class AnnotationProcessor extends AbstractProcessor {
   @Override
   public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
     List<String> loggerClassNames = new ArrayList<>();
-    TypeElement mainRobotClass = null;
+    var mainRobotClasses = new ArrayList<TypeElement>();
 
     // Used to check for a main robot class
-    // Note: Assumes there's only one robot class per project.
-    //       Some teams will create different robot classes for main/testbed/sim
     var robotBaseClass = processingEnv.getElementUtils().getTypeElement("edu.wpi.first.wpilibj.RobotBase").asType();
 
     for (TypeElement annotation : annotations) {
@@ -82,7 +81,7 @@ public class AnnotationProcessor extends AbstractProcessor {
           String loggedClassName = loggerGenerator.writeLoggerFile(clazz);
 
           if (processingEnv.getTypeUtils().isAssignable(clazz.getSuperclass(), robotBaseClass)) {
-            mainRobotClass = clazz;
+            mainRobotClasses.add(clazz);
           }
 
           loggerClassNames.add(loggedClassName + "Logger");
@@ -97,7 +96,9 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     if (!annotations.isEmpty()) {
-      epiloguerGenerator.writeEpiloguerFile(loggerClassNames, mainRobotClass);
+      // Sort alphabetically
+      mainRobotClasses.sort(Comparator.comparing(c -> c.getSimpleName().toString()));
+      epiloguerGenerator.writeEpiloguerFile(loggerClassNames, mainRobotClasses);
     }
 
     return true;
