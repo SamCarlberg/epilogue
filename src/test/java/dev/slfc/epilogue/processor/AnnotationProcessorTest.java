@@ -929,6 +929,77 @@ class AnnotationProcessorTest {
     assertLoggerGenerates(source, expectedGeneratedSource);
   }
 
+  @Test
+  void annotationInheritance() {
+
+    String source = """
+      package dev.slfc.epilogue;
+
+      @Epilogue
+      class Child {}
+
+      class GoldenChild extends Child {} // inherits the @Epilogue annotation from the parent
+      
+      @Epilogue
+      interface IO {}
+
+      class IOImpl implements IO {}
+
+      @Epilogue
+      public class HelloWorld {
+        /* Logged */ Child child;
+        /* Logged */ GoldenChild goldenChild;
+        /* Logged */ IO io;
+        /* Not logged */ IOImpl ioImpl;
+      }
+      """;
+
+    String expectedRooLogger = """
+      package dev.slfc.epilogue;
+
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
+      import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
+
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
+        public HelloWorldLogger() {
+          super(HelloWorld.class);
+        }
+
+        @Override
+        public void update(DataLogger dataLogger, HelloWorld object) {
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            Epiloguer.childLogger.tryUpdate(dataLogger.getSubLogger("child"), object.child, Epiloguer.getConfig().errorHandler);
+            Epiloguer.goldenChildLogger.tryUpdate(dataLogger.getSubLogger("goldenChild"), object.goldenChild, Epiloguer.getConfig().errorHandler);
+            Epiloguer.ioLogger.tryUpdate(dataLogger.getSubLogger("io"), object.io, Epiloguer.getConfig().errorHandler);
+          }
+        }
+      }
+      """;
+
+    Compilation compilation =
+        javac()
+            .withProcessors(new AnnotationProcessor())
+            .compile(JavaFileObjects.forSourceString("dev.slfc.epilogue.HelloWorld", source));
+
+    assertThat(compilation).succeededWithoutWarnings();
+    var generatedFiles = compilation.generatedSourceFiles();
+
+    // 4 loggers + Epiloguer
+    assertEquals(5, generatedFiles.size());
+
+    // first is Epiloguer
+    // second is the class-specific logger
+    var generatedFile = generatedFiles.get(3);
+    try {
+      var content = generatedFile.getCharContent(false);
+      assertEquals(expectedRooLogger, content);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private void assertCompilationError(String message, long lineNumber, long col, Diagnostic<? extends JavaFileObject> diagnostic) {
     assertAll(
         () -> assertEquals(Diagnostic.Kind.ERROR, diagnostic.getKind(), "not an error"),
