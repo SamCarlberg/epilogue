@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
@@ -281,12 +280,5 @@ public class AnnotationProcessor extends AbstractProcessor {
     // Sort alphabetically
     mainRobotClasses.sort(Comparator.comparing(c -> c.getSimpleName().toString()));
     epiloguerGenerator.writeEpiloguerFile(loggerClassNames, mainRobotClasses);
-  }
-
-  static <K, K2, V> Map<K2, V> transformKeys(Map<K , V> map, Function<K, K2> transformer) {
-    var newMap = new HashMap<K2, V>();
-    map.forEach((key, value) -> newMap.put(transformer.apply(key), value));
-
-    return newMap;
   }
 }
