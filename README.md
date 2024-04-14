@@ -6,6 +6,19 @@ Epilogue is an a low overhead annotation-based data logging library for FRC.
 
 Epilogue does not use reflection at runtime, which keeps CPU overhead to a minimum. Instead, an annotation processor will run when your project is compiled and scan for the classes you've marked with the `@Epilogue` annotation. Custom logger files will be generated for each annotated class that will be used at runtime to directly read from the fields and methods on the objects being logged - no reflection required. The code generation also creates an `Epiloguer` class in the `dev.slfc.epilogue` package that contains instances of all of the generated custom loggers and - if you're logging your main robot class - a convenience method to automatically set up logging.
 
+## Installation
+
+Epilogue is not currently publishing to any Maven servers. 
+
+1. Clone the project
+2. cd into the cloned repository and run `./gradlew publishToMavenLocal`
+
+Then, to add Epilogue to a robot program:
+
+1. Add `repositories { mavenLocal() }` to `build.gradle`
+2. Add `implementation 'dev.slfc.epilogue:epilogue-runtime:+'` to the `dependencies` block
+3. Add `annotationProcessor 'dev.slfc.epilogue:epilogue-processor:+'` to the `dependencies` block
+
 ## Usage
 
 Annotate the classes you're interested in logging using the `@Epilogue` annotation. Classes that implement `Sendable` (with the exceptions of commands and subsystems) will be logged using their sendable implementation and do not need to be annotated. Likewise, classes that declare a `public static final Struct struct` object for struct-base serialization will be serialized to raw bytes using that serialization path and also do not need to be annotated.
