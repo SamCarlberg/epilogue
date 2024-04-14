@@ -1,6 +1,7 @@
 package dev.slfc.epilogue.processor;
 
 import com.google.auto.service.AutoService;
+import dev.slfc.epilogue.CustomLoggerFor;
 import dev.slfc.epilogue.Epilogue;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -16,7 +17,9 @@ import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -47,6 +50,15 @@ public class AnnotationProcessor extends AbstractProcessor {
     annotations.stream().filter(ann -> ann.getSimpleName().contentEquals("CustomLoggerFor")).findAny().ifPresent(customLogger -> {
       customLoggers.putAll(processCustomLoggers(roundEnv, customLogger));
     });
+
+    roundEnv
+        .getRootElements()
+        .stream()
+        .filter(e -> processingEnv.getTypeUtils().isAssignable(e.asType(), processingEnv.getTypeUtils().erasure(processingEnv.getElementUtils().getTypeElement("dev.slfc.epilogue.logging.ClassSpecificLogger").asType())))
+        .filter(e -> e.getAnnotation(CustomLoggerFor.class) == null)
+        .forEach(e -> {
+          processingEnv.getMessager().printError("Custom logger classes should have a @CustomLoggerFor annotation", e);
+        });
 
     // Handlers are declared in order of priority. If an element could be logged in more than one
     // way (eg a class implements both Sendable and StructSerializable), the order of the handlers
@@ -210,31 +222,53 @@ public class AnnotationProcessor extends AbstractProcessor {
         processingEnv.getElementUtils().getTypeElement("dev.slfc.epilogue.logging.ClassSpecificLogger");
 
     for (Element annotatedElement : annotatedElements) {
-      DeclaredType targetType = null;
+      List<AnnotationValue> targetTypes = List.of();
       for (AnnotationMirror annotationMirror : annotatedElement.getAnnotationMirrors()) {
         for (var entry : annotationMirror.getElementValues().entrySet()) {
           if (entry.getKey().getSimpleName().toString().equals("value")) {
-            targetType = (DeclaredType) entry.getValue().getValue();
+            //noinspection unchecked
+            targetTypes = (List<AnnotationValue>) entry.getValue().getValue();
           }
         }
       }
 
-      var reflectedTarget = targetType.asElement();
+      boolean hasPublicNoArgConstructor =
+          annotatedElement
+              .getEnclosedElements()
+              .stream()
+              .anyMatch(enclosedElement -> enclosedElement instanceof ExecutableElement exe
+                  && exe.getKind() == ElementKind.CONSTRUCTOR
+                  && exe.getModifiers().contains(Modifier.PUBLIC)
+                  && exe.getParameters().isEmpty()
+              );
 
-      // eg ClassSpecificLogger<MyDataType>
-      var requiredSuperClass = processingEnv.getTypeUtils().getDeclaredType(loggerSuperClass, reflectedTarget.asType());
-
-      if (customLoggers.containsKey(targetType)) {
-        processingEnv.getMessager().printError("Multiple custom loggers detected for type " + targetType, annotatedElement);
+      if (!hasPublicNoArgConstructor) {
+        processingEnv.getMessager().printError("Logger classes must have a public no-argument constructor", annotatedElement);
         continue;
       }
 
-      if (!processingEnv.getTypeUtils().isAssignable(annotatedElement.asType(), requiredSuperClass)) {
-        processingEnv.getMessager().printError("Not a subclass of ClassSpecificLogger<" + targetType + ">", annotatedElement);
-        continue;
-      }
+      for (AnnotationValue value : targetTypes) {
+        var targetType = (DeclaredType) value.getValue();
+        var reflectedTarget = targetType.asElement();
 
-      customLoggers.put(targetType, (DeclaredType) annotatedElement.asType());
+        // eg ClassSpecificLogger<MyDataType>
+        var requiredSuperClass =
+            processingEnv.getTypeUtils().getDeclaredType(
+                loggerSuperClass,
+                processingEnv.getTypeUtils().getWildcardType(null, reflectedTarget.asType()));
+
+        if (customLoggers.containsKey(targetType)) {
+          processingEnv.getMessager().printError("Multiple custom loggers detected for type " + targetType, annotatedElement);
+          continue;
+        }
+
+        if (!processingEnv.getTypeUtils().isAssignable(annotatedElement.asType(), requiredSuperClass)) {
+          processingEnv.getMessager().printError("Not a subclass of ClassSpecificLogger<" + targetType + ">", annotatedElement);
+          continue;
+        }
+
+        customLoggers.put(targetType, (DeclaredType) annotatedElement.asType());
+      }
     }
 
     return customLoggers;

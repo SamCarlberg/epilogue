@@ -183,6 +183,65 @@ class EpiloguerGeneratorTest {
     assertLoggerGenerates(source, expected);
   }
 
+  @Test
+  void genericCustomLogger() {
+    String source = """
+        package dev.slfc.epilogue;
+        
+        import dev.slfc.epilogue.logging.*;
+
+        class A {}
+        class B extends A {}
+        class C extends A {}
+
+        @CustomLoggerFor({A.class, B.class, C.class})
+        class CustomLogger extends ClassSpecificLogger<A> {
+          CustomLogger() { super(A.class); }
+
+          @Override
+          public void update(DataLogger logger, A object) {} // implementation is irrelevant
+        }
+
+        @Epilogue
+        class HelloWorld {
+          A a_b_or_c;
+          B b;
+          C c;
+        }
+        """;
+
+    String expected = """
+        package dev.slfc.epilogue;
+
+        import dev.slfc.epilogue.HelloWorldLogger;
+        import dev.slfc.epilogue.CustomLogger;
+
+        public final class Epiloguer {
+          private static final EpilogueConfiguration config = new EpilogueConfiguration();
+
+          public static final HelloWorldLogger helloWorldLogger = new HelloWorldLogger();
+          public static final CustomLogger customLogger = new CustomLogger();
+
+          public static void configure(java.util.function.Consumer<EpilogueConfiguration> configurator) {
+            configurator.accept(config);
+          }
+
+          public static EpilogueConfiguration getConfig() {
+            return config;
+          }
+
+          /**
+           * Checks if data associated with a given importance level should be logged.
+           */
+          public static boolean shouldLog(Epilogue.Importance importance) {
+            return importance.compareTo(config.minimumImportance) >= 0;
+          }
+        }
+        """;
+
+    assertLoggerGenerates(source, expected);
+  }
+
   private void assertLoggerGenerates(String loggedClassContent, String loggerClassContent) {
     Compilation compilation =
         javac()

@@ -49,9 +49,15 @@ public class EpiloguerGenerator {
             return;
           }
 
-          out.print("import ");
-          out.print(name);
-          out.println(";");
+          out.println("import " + name + ";");
+        });
+        customLoggers.values().stream().distinct().forEach((loggerType) -> {
+          var name = loggerType.asElement().toString();
+          if (!name.contains(".")) {
+            // Logger is in the global namespace, don't need to import
+            return;
+          }
+          out.println("import " + name + ";");
         });
         out.println();
 
@@ -71,12 +77,12 @@ public class EpiloguerGenerator {
           out.print(simple);
           out.println("();");
         });
+        customLoggers.values().stream().distinct().forEach((loggerType) -> {
+          var loggerTypeName = loggerType.asElement().getSimpleName();
+          out.println("  public static final " + loggerTypeName + " " + StringUtils.lowerCamelCase(loggerTypeName) + " = new " + loggerTypeName + "();");
+        });
         out.println();
 
-        customLoggers.forEach((targetType, loggerType) -> {
-          var loggerTypeName = loggerType.asElement().getSimpleName();
-          out.println("  public static final " + loggerType + " " + StringUtils.lowerCamelCase(loggerTypeName) + " = new " + loggerType + "();");
-        });
 
         out.println("""
               public static void configure(java.util.function.Consumer<EpilogueConfiguration> configurator) {
