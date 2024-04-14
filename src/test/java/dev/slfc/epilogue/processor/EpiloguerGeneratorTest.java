@@ -196,7 +196,7 @@ class EpiloguerGeneratorTest {
 
         @CustomLoggerFor({A.class, B.class, C.class})
         class CustomLogger extends ClassSpecificLogger<A> {
-          CustomLogger() { super(A.class); }
+          public CustomLogger() { super(A.class); }
 
           @Override
           public void update(DataLogger logger, A object) {} // implementation is irrelevant
