@@ -32,8 +32,8 @@ public class EpiloguerGenerator {
    *
    * @param loggerClassNames the names of the generated logger classes. Each of these will be
    *                         instantiated in a public static field on the Epiloguer class.
-   * @param mainRobotClass the main robot class. May be null. Used to generate a {@code bind()}
-   *                       method to add a callback hook to a TimedRobot to log itself.
+   * @param mainRobotClasses the main robot classes. May be empty. Used to generate a {@code bind()}
+   *                         method to add a callback hook to a TimedRobot to log itself.
    */
   public void writeEpiloguerFile(List<String> loggerClassNames, Collection<TypeElement> mainRobotClasses) {
     try {

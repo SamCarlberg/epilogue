@@ -8,7 +8,11 @@ import java.util.Map;
 
 /**
  * Base class for class-specific generated loggers. Loggers are generated at compile time by
- * the Epilogue annotation processor and are used at runtime for zero-overhead data logging.
+ * the Epilogue annotation processor and are used at runtime for zero-overhead data logging. Users
+ * may also declare custom loggers, annotated with
+ * {@link dev.slfc.epilogue.CustomLoggerFor @CustomLoggerFor}, for Epilogue to pull in during
+ * compile time to use for logging third party types.
+ * @param <T> the type of data supported by the logger
  */
 @SuppressWarnings("unused") // Used by generated subclasses
 public abstract class ClassSpecificLogger<T> {
