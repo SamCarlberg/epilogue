@@ -998,6 +998,58 @@ class AnnotationProcessorTest {
     }
   }
 
+  @Test
+  void customLogger() {
+    String source = """
+        package dev.slfc.epilogue;
+
+        import dev.slfc.epilogue.logging.*;
+
+        record Point(int x, int y) {}
+
+        @CustomLoggerFor(Point.class)
+        class CustomPointLogger extends ClassSpecificLogger<Point> {
+          public CustomPointLogger() {
+            super(Point.class);
+          }
+
+          @Override
+          public void update(DataLogger dataLogger, Point point) {
+            // Implementation is irrelevant
+          }
+        }
+
+        @Epilogue
+        class HelloWorld {
+          Point point;
+        }
+        """;
+
+    String expectedGeneratedSource = """
+      package dev.slfc.epilogue;
+
+      import dev.slfc.epilogue.Epilogue;
+      import dev.slfc.epilogue.Epiloguer;
+      import dev.slfc.epilogue.logging.ClassSpecificLogger;
+      import dev.slfc.epilogue.logging.DataLogger;
+
+      public class HelloWorldLogger extends ClassSpecificLogger<HelloWorld> {
+        public HelloWorldLogger() {
+          super(HelloWorld.class);
+        }
+
+        @Override
+        public void update(DataLogger dataLogger, HelloWorld object) {
+          if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
+            Epiloguer.customPointLogger.tryUpdate(dataLogger.getSubLogger("point"), object.point, Epiloguer.getConfig().errorHandler);
+          }
+        }
+      }
+      """;
+
+    assertLoggerGenerates(source, expectedGeneratedSource);
+  }
+
   private void assertCompilationError(String message, long lineNumber, long col, Diagnostic<? extends JavaFileObject> diagnostic) {
     assertAll(
         () -> assertEquals(Diagnostic.Kind.ERROR, diagnostic.getKind(), "not an error"),

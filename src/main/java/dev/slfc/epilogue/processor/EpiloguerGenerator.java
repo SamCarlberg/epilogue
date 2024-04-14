@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeMirror;
 
 /**
  * Generates the {@code Epiloguer} file used as the main entry point to logging with Epilogue in a
@@ -16,9 +19,11 @@ import javax.lang.model.element.TypeElement;
  */
 public class EpiloguerGenerator {
   private final ProcessingEnvironment processingEnv;
+  private final Map<TypeMirror, DeclaredType> customLoggers;
 
-  public EpiloguerGenerator(ProcessingEnvironment processingEnv) {
+  public EpiloguerGenerator(ProcessingEnvironment processingEnv, Map<TypeMirror, DeclaredType> customLoggers) {
     this.processingEnv = processingEnv;
+    this.customLoggers = customLoggers;
   }
 
   /**
@@ -67,6 +72,11 @@ public class EpiloguerGenerator {
           out.println("();");
         });
         out.println();
+
+        customLoggers.forEach((targetType, loggerType) -> {
+          var loggerTypeName = loggerType.asElement().getSimpleName();
+          out.println("  public static final " + loggerType + " " + StringUtils.lowerCamelCase(loggerTypeName) + " = new " + loggerType + "();");
+        });
 
         out.println("""
               public static void configure(java.util.function.Consumer<EpilogueConfiguration> configurator) {

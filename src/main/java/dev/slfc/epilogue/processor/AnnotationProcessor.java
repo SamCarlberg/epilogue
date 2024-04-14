@@ -5,26 +5,30 @@ import dev.slfc.epilogue.Epilogue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.Processor;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.NoType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 
-@SupportedAnnotationTypes("dev.slfc.epilogue.Epilogue")
+@SupportedAnnotationTypes({"dev.slfc.epilogue.CustomLoggerFor", "dev.slfc.epilogue.Epilogue"})
 @SupportedSourceVersion(SourceVersion.RELEASE_21)
 @AutoService(Processor.class)
 public class AnnotationProcessor extends AbstractProcessor {
@@ -33,14 +37,24 @@ public class AnnotationProcessor extends AbstractProcessor {
   private List<ElementHandler> handlers;
 
   @Override
-  public synchronized void init(ProcessingEnvironment processingEnv) {
-    super.init(processingEnv);
+  public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+    if (annotations.isEmpty()) {
+      // Nothing to do, don't claim
+      return false;
+    }
+
+    Map<TypeMirror, DeclaredType> customLoggers = new HashMap<>();
+
+    annotations.stream().filter(ann -> ann.getSimpleName().contentEquals("CustomLoggerFor")).findAny().ifPresent(customLogger -> {
+      customLoggers.putAll(processCustomLoggers(roundEnv, customLogger));
+    });
 
     // Handlers are declared in order of priority. If an element could be logged in more than one
     // way (eg a class implements both Sendable and StructSerializable), the order of the handlers
     // in this list will determine how it gets logged.
     handlers = List.of(
         new LoggableHandler(processingEnv), // prioritize epilogue logging over Sendable
+        new ConfiguredLoggerHandler(processingEnv, customLoggers), // then customized logging configs
 
         new ArrayHandler(processingEnv),
         new CollectionHandler(processingEnv),
@@ -51,57 +65,14 @@ public class AnnotationProcessor extends AbstractProcessor {
         new SendableHandler(processingEnv)
     );
 
-    epiloguerGenerator = new EpiloguerGenerator(processingEnv);
+    epiloguerGenerator = new EpiloguerGenerator(processingEnv, customLoggers);
     loggerGenerator = new LoggerGenerator(processingEnv, handlers);
-  }
 
-  @Override
-  public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-    List<String> loggerClassNames = new ArrayList<>();
-    var mainRobotClasses = new ArrayList<TypeElement>();
+    annotations.stream().filter(ann -> ann.getSimpleName().contentEquals("Epilogue")).findAny().ifPresent(epilogue -> {
+      processEpilogue(roundEnv, epilogue);
+    });
 
-    // Used to check for a main robot class
-    var robotBaseClass = processingEnv.getElementUtils().getTypeElement("edu.wpi.first.wpilibj.RobotBase").asType();
-
-    for (TypeElement annotation : annotations) {
-      var annotatedElements = roundEnv.getElementsAnnotatedWith(annotation);
-
-      boolean validFields = validateFields(annotatedElements);
-      boolean validMethods = validateMethods(annotatedElements);
-
-      if (!(validFields && validMethods)) {
-        // Generate nothing and bail
-        // Return `true` to mark the annotations as claimed so they're not processed again
-        return true;
-      }
-
-      var classes = annotatedElements.stream().filter(e -> e instanceof TypeElement).map(e -> (TypeElement) e).toList();
-      for (TypeElement clazz : classes) {
-        try {
-          String loggedClassName = loggerGenerator.writeLoggerFile(clazz);
-
-          if (processingEnv.getTypeUtils().isAssignable(clazz.getSuperclass(), robotBaseClass)) {
-            mainRobotClasses.add(clazz);
-          }
-
-          loggerClassNames.add(loggedClassName + "Logger");
-        } catch (IOException e) {
-          processingEnv.getMessager().printMessage(
-              Diagnostic.Kind.ERROR,
-              "Could not write logger file for " + clazz.getQualifiedName(),
-              clazz
-          );
-        }
-      }
-    }
-
-    if (!annotations.isEmpty()) {
-      // Sort alphabetically
-      mainRobotClasses.sort(Comparator.comparing(c -> c.getSimpleName().toString()));
-      epiloguerGenerator.writeEpiloguerFile(loggerClassNames, mainRobotClasses);
-    }
-
-    return true;
+    return false;
   }
 
   private boolean validateFields(Set<? extends Element> annotatedElements) {
@@ -225,5 +196,97 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "[EPILOGUE] Excluded from logs because " + type + " is not a loggable data type", element);
     return true;
+  }
+
+  private Map<DeclaredType, DeclaredType> processCustomLoggers(
+      RoundEnvironment roundEnv,
+      TypeElement customLoggerAnnotation) {
+    // map logged type to its custom logger, eg
+    // { Point.class => CustomPointLogger.class }
+    var customLoggers = new HashMap<DeclaredType, DeclaredType>();
+
+    var annotatedElements = roundEnv.getElementsAnnotatedWith(customLoggerAnnotation);
+
+    var loggerSuperClass =
+        processingEnv.getElementUtils().getTypeElement("dev.slfc.epilogue.logging.ClassSpecificLogger");
+
+    for (Element annotatedElement : annotatedElements) {
+      DeclaredType targetType = null;
+      for (AnnotationMirror annotationMirror : annotatedElement.getAnnotationMirrors()) {
+        for (var entry : annotationMirror.getElementValues().entrySet()) {
+          if (entry.getKey().getSimpleName().toString().equals("value")) {
+            targetType = (DeclaredType) entry.getValue().getValue();
+          }
+        }
+      }
+
+      var reflectedTarget = targetType.asElement();
+
+      // eg ClassSpecificLogger<MyDataType>
+      var requiredSuperClass = processingEnv.getTypeUtils().getDeclaredType(loggerSuperClass, reflectedTarget.asType());
+
+      if (customLoggers.containsKey(targetType)) {
+        processingEnv.getMessager().printError("Multiple custom loggers detected for type " + targetType, annotatedElement);
+        continue;
+      }
+
+      if (!processingEnv.getTypeUtils().isAssignable(annotatedElement.asType(), requiredSuperClass)) {
+        processingEnv.getMessager().printError("Not a subclass of ClassSpecificLogger<" + targetType + ">", annotatedElement);
+        continue;
+      }
+
+      customLoggers.put(targetType, (DeclaredType) annotatedElement.asType());
+    }
+
+    return customLoggers;
+  }
+
+  private void processEpilogue(RoundEnvironment roundEnv, TypeElement epilogueAnnotation) {
+    var annotatedElements = roundEnv.getElementsAnnotatedWith(epilogueAnnotation);
+
+    List<String> loggerClassNames = new ArrayList<>();
+    var mainRobotClasses = new ArrayList<TypeElement>();
+
+    // Used to check for a main robot class
+    var robotBaseClass = processingEnv.getElementUtils().getTypeElement("edu.wpi.first.wpilibj.RobotBase").asType();
+
+    boolean validFields = validateFields(annotatedElements);
+    boolean validMethods = validateMethods(annotatedElements);
+
+    if (!(validFields && validMethods)) {
+      // Generate nothing and bail
+      // Return `true` to mark the annotations as claimed so they're not processed again
+      return;
+    }
+
+    var classes = annotatedElements.stream().filter(e -> e instanceof TypeElement).map(e -> (TypeElement) e).toList();
+    for (TypeElement clazz : classes) {
+      try {
+        String loggedClassName = loggerGenerator.writeLoggerFile(clazz);
+
+        if (processingEnv.getTypeUtils().isAssignable(clazz.getSuperclass(), robotBaseClass)) {
+          mainRobotClasses.add(clazz);
+        }
+
+        loggerClassNames.add(loggedClassName + "Logger");
+      } catch (IOException e) {
+        processingEnv.getMessager().printMessage(
+            Diagnostic.Kind.ERROR,
+            "Could not write logger file for " + clazz.getQualifiedName(),
+            clazz
+        );
+      }
+    }
+
+    // Sort alphabetically
+    mainRobotClasses.sort(Comparator.comparing(c -> c.getSimpleName().toString()));
+    epiloguerGenerator.writeEpiloguerFile(loggerClassNames, mainRobotClasses);
+  }
+
+  static <K, K2, V> Map<K2, V> transformKeys(Map<K , V> map, Function<K, K2> transformer) {
+    var newMap = new HashMap<K2, V>();
+    map.forEach((key, value) -> newMap.put(transformer.apply(key), value));
+
+    return newMap;
   }
 }
