@@ -97,19 +97,17 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     for (VariableElement field : fields) {
       var config = field.getAnnotation(Epilogue.class);
-      if (config != null) {
-        // Field is explicitly tagged
-        if (config.importance() != Epilogue.Importance.NONE) {
-          // And is not opted out of
-          if (isNotLoggable(field, field.asType())) {
-            // And is not of a loggable type
-            processingEnv.getMessager().printMessage(
-                Diagnostic.Kind.ERROR,
-                "[EPILOGUE] You have opted in to Epilogue logging on this field, but it is not a loggable data type!",
-                field
-            );
-            valid = false;
-          }
+      // Field is explicitly tagged
+      if (config.importance() != Epilogue.Importance.NONE) {
+        // And is not opted out of
+        if (isNotLoggable(field, field.asType())) {
+          // And is not of a loggable type
+          processingEnv.getMessager().printMessage(
+              Diagnostic.Kind.ERROR,
+              "[EPILOGUE] You have opted in to Epilogue logging on this field, but it is not a loggable data type!",
+              field
+          );
+          valid = false;
         }
       }
     }
@@ -127,61 +125,59 @@ public class AnnotationProcessor extends AbstractProcessor {
 
     for (ExecutableElement method : methods) {
       var config = method.getAnnotation(Epilogue.class);
-      if (config != null) {
-        // Field is explicitly tagged
-        if (config.importance() != Epilogue.Importance.NONE) {
-          // And is not opted out of
-          if (isNotLoggable(method, method.getReturnType())) {
-            // And is not of a loggable type
-            processingEnv.getMessager().printMessage(
-                Diagnostic.Kind.ERROR,
-                "[EPILOGUE] You have opted in to Epilogue logging on this method, but it does not return a loggable data type!",
-                method
-            );
-            valid = false;
-          }
+      // Field is explicitly tagged
+      if (config.importance() != Epilogue.Importance.NONE) {
+        // And is not opted out of
+        if (isNotLoggable(method, method.getReturnType())) {
+          // And is not of a loggable type
+          processingEnv.getMessager().printMessage(
+              Diagnostic.Kind.ERROR,
+              "[EPILOGUE] You have opted in to Epilogue logging on this method, but it does not return a loggable data type!",
+              method
+          );
+          valid = false;
+        }
 
-          if (!method.getModifiers().contains(Modifier.PUBLIC)) {
-            // Only public methods can be logged
+        if (!method.getModifiers().contains(Modifier.PUBLIC)) {
+          // Only public methods can be logged
 
-            processingEnv.getMessager().printMessage(
-                Diagnostic.Kind.ERROR,
-                "[EPILOGUE] Logged methods must be public",
-                method
-            );
+          processingEnv.getMessager().printMessage(
+              Diagnostic.Kind.ERROR,
+              "[EPILOGUE] Logged methods must be public",
+              method
+          );
 
-            valid = false;
-          }
+          valid = false;
+        }
 
-          if (method.getModifiers().contains(Modifier.STATIC)) {
-            processingEnv.getMessager().printMessage(
-                Diagnostic.Kind.ERROR,
-                "[EPILOGUE] Logged methods cannot be static",
-                method
-            );
+        if (method.getModifiers().contains(Modifier.STATIC)) {
+          processingEnv.getMessager().printMessage(
+              Diagnostic.Kind.ERROR,
+              "[EPILOGUE] Logged methods cannot be static",
+              method
+          );
 
-            valid = false;
-          }
+          valid = false;
+        }
 
-          if (method.getReturnType().getKind() == TypeKind.NONE) {
-            processingEnv.getMessager().printMessage(
-                Diagnostic.Kind.ERROR,
-                "[EPILOGUE] Logged methods cannot be void",
-                method
-            );
+        if (method.getReturnType().getKind() == TypeKind.NONE) {
+          processingEnv.getMessager().printMessage(
+              Diagnostic.Kind.ERROR,
+              "[EPILOGUE] Logged methods cannot be void",
+              method
+          );
 
-            valid = false;
-          }
+          valid = false;
+        }
 
-          if (!method.getParameters().isEmpty()) {
-            processingEnv.getMessager().printMessage(
-                Diagnostic.Kind.ERROR,
-                "[EPILOGUE] Logged methods cannot accept arguments",
-                method
-            );
+        if (!method.getParameters().isEmpty()) {
+          processingEnv.getMessager().printMessage(
+              Diagnostic.Kind.ERROR,
+              "[EPILOGUE] Logged methods cannot accept arguments",
+              method
+          );
 
-            valid = false;
-          }
+          valid = false;
         }
       }
     }
@@ -205,7 +201,7 @@ public class AnnotationProcessor extends AbstractProcessor {
       return false;
     }
 
-    processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, "[EPILOGUE] Excluded from logs because " + type + " is not a loggable data type", element);
+    processingEnv.getMessager().printWarning("[EPILOGUE] Excluded from logs because " + type + " is not a loggable data type", element);
     return true;
   }
 
@@ -295,6 +291,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     var classes = annotatedElements.stream().filter(e -> e instanceof TypeElement).map(e -> (TypeElement) e).toList();
     for (TypeElement clazz : classes) {
       try {
+        warnOfNonLoggableElements(clazz);
         String loggedClassName = loggerGenerator.writeLoggerFile(clazz);
 
         if (processingEnv.getTypeUtils().isAssignable(clazz.getSuperclass(), robotBaseClass)) {
@@ -314,5 +311,37 @@ public class AnnotationProcessor extends AbstractProcessor {
     // Sort alphabetically
     mainRobotClasses.sort(Comparator.comparing(c -> c.getSimpleName().toString()));
     epiloguerGenerator.writeEpiloguerFile(loggerClassNames, mainRobotClasses);
+  }
+
+  private void warnOfNonLoggableElements(TypeElement clazz) {
+    var epilogue = clazz.getAnnotation(Epilogue.class);
+    if (epilogue.strategy() == Epilogue.Strategy.OPT_IN) {
+      // field and method validations will have already checked everything
+      return;
+    }
+
+    for (Element element : clazz.getEnclosedElements()) {
+      if (element.getAnnotation(Epilogue.class) instanceof Epilogue e && e.importance() == Epilogue.Importance.NONE) {
+        // Explicitly opted out from, don't need to check
+        continue;
+      }
+
+      if (element.getModifiers().contains(Modifier.STATIC)) {
+        // static elements are never logged
+        continue;
+      }
+
+      if (element instanceof VariableElement v) {
+        // isNotLoggable will internally print a warning message
+        isNotLoggable(v, v.asType());
+      }
+
+      if (element instanceof ExecutableElement exe) {
+        if (exe.getModifiers().contains(Modifier.PUBLIC) && exe.getParameters().isEmpty()) {
+          // isNotLoggable will internally print a warning message
+          isNotLoggable(exe, exe.getReturnType());
+        }
+      }
+    }
   }
 }

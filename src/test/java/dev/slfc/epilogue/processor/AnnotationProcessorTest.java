@@ -981,7 +981,7 @@ class AnnotationProcessorTest {
             .withProcessors(new AnnotationProcessor())
             .compile(JavaFileObjects.forSourceString("dev.slfc.epilogue.HelloWorld", source));
 
-    assertThat(compilation).succeededWithoutWarnings();
+    assertThat(compilation).succeeded();
     var generatedFiles = compilation.generatedSourceFiles();
 
     // 3 loggers + Epiloguer
@@ -1050,6 +1050,29 @@ class AnnotationProcessorTest {
     assertLoggerGenerates(source, expectedGeneratedSource);
   }
 
+  @Test
+  void warnsAboutNonLoggableFields() {
+    String source = """
+        package dev.slfc.epilogue;
+        
+        @Epilogue
+        class HelloWorld {
+          Throwable t;
+        }
+        """;
+
+    Compilation compilation =
+        javac()
+            .withProcessors(new AnnotationProcessor())
+            .compile(JavaFileObjects.forSourceString("dev.slfc.epilogue.HelloWorld", source));
+
+    assertThat(compilation).succeeded();
+    assertEquals(1, compilation.warnings().size());
+    var warning = compilation.warnings().getFirst();
+    var message = warning.getMessage(Locale.getDefault());
+    assertEquals("[EPILOGUE] Excluded from logs because java.lang.Throwable is not a loggable data type", message);
+  }
+
   private void assertCompilationError(String message, long lineNumber, long col, Diagnostic<? extends JavaFileObject> diagnostic) {
     assertAll(
         () -> assertEquals(Diagnostic.Kind.ERROR, diagnostic.getKind(), "not an error"),
@@ -1065,7 +1088,7 @@ class AnnotationProcessorTest {
             .withProcessors(new AnnotationProcessor())
             .compile(JavaFileObjects.forSourceString("dev.slfc.epilogue.HelloWorld", loggedClassContent));
 
-    assertThat(compilation).succeededWithoutWarnings();
+    assertThat(compilation).succeeded();
     var generatedFiles = compilation.generatedSourceFiles();
     assertEquals(2, generatedFiles.size());
     // first is Epiloguer
