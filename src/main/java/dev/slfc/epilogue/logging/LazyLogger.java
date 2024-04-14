@@ -208,7 +208,7 @@ public class LazyLogger implements DataLogger {
   }
 
   @Override
-  public <S extends StructSerializable> void log(String identifier, S value, Struct<S> struct) {
+  public <S> void log(String identifier, S value, Struct<S> struct) {
     var previous = previousValues.get(identifier);
 
     if (previous instanceof Object oldValue && oldValue.equals(value)) {
@@ -221,7 +221,7 @@ public class LazyLogger implements DataLogger {
   }
 
   @Override
-  public <S extends StructSerializable> void log(String identifier, S[] value, Struct<S> struct) {
+  public <S> void log(String identifier, S[] value, Struct<S> struct) {
     var previous = previousValues.get(identifier);
 
     if (previous instanceof Object[] oldValue && Arrays.equals(oldValue, value)) {

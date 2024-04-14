@@ -4,6 +4,7 @@ import static com.google.testing.compile.CompilationSubject.assertThat;
 import static com.google.testing.compile.Compiler.javac;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.testing.compile.Compilation;
 import com.google.testing.compile.JavaFileObjects;
@@ -671,7 +672,7 @@ class AnnotationProcessorTest {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
             dataLogger.log("x", object.x);
             dataLogger.log("arr1", object.arr1);
-            dataLogger.log("list", (object.list).toArray(java.lang.String[]::new));
+            dataLogger.log("list", object.list);
             dataLogger.log("getX", object.getX());
             dataLogger.log("getArr1", object.getArr1());
           }
@@ -728,7 +729,7 @@ class AnnotationProcessorTest {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
             dataLogger.log("x", object.x, dev.slfc.epilogue.HelloWorld.Structable.struct);
             dataLogger.log("arr1", object.arr1, dev.slfc.epilogue.HelloWorld.Structable.struct);
-            dataLogger.log("list", (object.list).toArray(dev.slfc.epilogue.HelloWorld.Structable[]::new), dev.slfc.epilogue.HelloWorld.Structable.struct);
+            dataLogger.log("list", object.list, dev.slfc.epilogue.HelloWorld.Structable.struct);
             dataLogger.log("getX", object.getX(), dev.slfc.epilogue.HelloWorld.Structable.struct);
             dataLogger.log("getArr1", object.getArr1(), dev.slfc.epilogue.HelloWorld.Structable.struct);
           }
@@ -775,10 +776,10 @@ class AnnotationProcessorTest {
         @Override
         public void update(DataLogger dataLogger, HelloWorld object) {
           if (Epiloguer.shouldLog(Epilogue.Importance.DEBUG)) {
-            dataLogger.log("list", (object.list).toArray(java.lang.String[]::new));
-            dataLogger.log("set", (object.set).toArray(java.lang.String[]::new));
-            dataLogger.log("queue", (object.queue).toArray(java.lang.String[]::new));
-            dataLogger.log("stack", (object.stack).toArray(java.lang.String[]::new));
+            dataLogger.log("list", object.list);
+            dataLogger.log("set", object.set);
+            dataLogger.log("queue", object.queue);
+            dataLogger.log("stack", object.stack);
           }
         }
       }

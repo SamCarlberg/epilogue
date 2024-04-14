@@ -3,7 +3,7 @@ package dev.slfc.epilogue.logging;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Unit;
 import edu.wpi.first.util.struct.Struct;
-import edu.wpi.first.util.struct.StructSerializable;
+import java.util.Collection;
 
 public interface DataLogger {
   static DataLogger multi(DataLogger... loggers) {
@@ -50,9 +50,19 @@ public interface DataLogger {
 
   void log(String identifier, String[] value);
 
-  <S extends StructSerializable> void log(String identifier, S value, Struct<S> struct);
+  default void log(String identifier, Collection<String> value) {
+    log(identifier, value.toArray(String[]::new));
+  }
 
-  <S extends StructSerializable> void log(String identifier, S[] value, Struct<S> struct);
+  <S> void log(String identifier, S value, Struct<S> struct);
+
+  <S> void log(String identifier, S[] value, Struct<S> struct);
+
+  default <S> void log(String identifier, Collection<S> value, Struct<S> struct) {
+    @SuppressWarnings("unchecked")
+    S[] array = (S[]) value.toArray();
+    log(identifier, array, struct);
+  }
 
   /**
    * Logs a measurement's value in terms of its base unit.

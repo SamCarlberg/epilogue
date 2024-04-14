@@ -36,9 +36,9 @@ public class CollectionHandler extends ElementHandler {
     var componentType = ((DeclaredType) dataType).getTypeArguments().getFirst();
 
     if (structHandler.isLoggableType(componentType)) {
-      return "dataLogger.log(\"" + loggedName(element) + "\", (" + elementAccess(element) + ").toArray(" + componentType + "[]::new), " + structHandler.structAccess(componentType) + ")";
+      return "dataLogger.log(\"" + loggedName(element) + "\", " + elementAccess(element) + ", " + structHandler.structAccess(componentType) + ")";
     } else {
-      return "dataLogger.log(\"" + loggedName(element) + "\", (" + elementAccess(element) + ").toArray(" + componentType + "[]::new))";
+      return "dataLogger.log(\"" + loggedName(element) + "\", " + elementAccess(element) + ")";
     }
   }
 }

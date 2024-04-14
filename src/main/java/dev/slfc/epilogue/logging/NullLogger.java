@@ -80,12 +80,12 @@ public class NullLogger implements DataLogger {
   }
 
   @Override
-  public <S extends StructSerializable> void log(String identifier, S value, Struct<S> struct) {
+  public <S> void log(String identifier, S value, Struct<S> struct) {
 
   }
 
   @Override
-  public <S extends StructSerializable> void log(String identifier, S[] value, Struct<S> struct) {
+  public <S> void log(String identifier, S[] value, Struct<S> struct) {
 
   }
 }

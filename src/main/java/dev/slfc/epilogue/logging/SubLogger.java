@@ -91,12 +91,12 @@ public class SubLogger implements DataLogger {
   }
 
   @Override
-  public <S extends StructSerializable> void log(String identifier, S value, Struct<S> struct) {
+  public <S> void log(String identifier, S value, Struct<S> struct) {
     impl.log(prefix + identifier, value, struct);
   }
 
   @Override
-  public <S extends StructSerializable> void log(String identifier, S[] value, Struct<S> struct) {
+  public <S> void log(String identifier, S[] value, Struct<S> struct) {
     impl.log(prefix + identifier, value, struct);
   }
 }

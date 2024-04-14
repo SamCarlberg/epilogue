@@ -92,14 +92,14 @@ public class TestLogger implements DataLogger {
   }
 
   @Override
-  public <S extends StructSerializable> void log(String identifier, S value, Struct<S> struct) {
+  public <S> void log(String identifier, S value, Struct<S> struct) {
     var serialized = StructBuffer.create(struct).write(value).array();
 
     entries.add(new LogEntry<>(identifier, serialized));
   }
 
   @Override
-  public <S extends StructSerializable> void log(String identifier, S[] value, Struct<S> struct) {
+  public <S> void log(String identifier, S[] value, Struct<S> struct) {
     var serialized = StructBuffer.create(struct).writeArray(value).array();
 
     entries.add(new LogEntry<>(identifier, serialized));

@@ -130,14 +130,14 @@ public class FileLogger implements DataLogger {
 
   @Override
   @SuppressWarnings("unchecked")
-  public <S extends StructSerializable> void log(String identifier, S value, Struct<S> struct) {
+  public <S> void log(String identifier, S value, Struct<S> struct) {
     dataLog.addSchema(struct);
     getEntry(identifier, (log, k) -> StructLogEntry.create(log, k, struct)).append(value);
   }
 
   @Override
   @SuppressWarnings("unchecked")
-  public <S extends StructSerializable> void log(String identifier, S[] value, Struct<S> struct) {
+  public <S> void log(String identifier, S[] value, Struct<S> struct) {
     dataLog.addSchema(struct);
     getEntry(identifier, (log, k) -> StructArrayLogEntry.create(log, k, struct)).append(value);
   }
