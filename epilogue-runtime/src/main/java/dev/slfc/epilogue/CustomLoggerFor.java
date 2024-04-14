@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Placed on a subclass of {@link dev.slfc.epilogue.logging.ClassSpecificLogger}. Epilogue will
+ * Placed on a subclass of {@code ClassSpecificLogger}. Epilogue will
  * detect it at compile time and allow logging of data types compatible with the logger.
  * {@snippet lang = java:
  * @CustomLoggerFor(VendorMotorType.class)
