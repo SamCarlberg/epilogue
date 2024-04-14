@@ -3,6 +3,7 @@ package dev.slfc.epilogue.processor;
 import com.google.auto.service.AutoService;
 import dev.slfc.epilogue.CustomLoggerFor;
 import dev.slfc.epilogue.Epilogue;
+import dev.slfc.epilogue.NotLogged;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -98,7 +99,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     for (VariableElement field : fields) {
       var config = field.getAnnotation(Epilogue.class);
       // Field is explicitly tagged
-      if (config.importance() != Epilogue.Importance.NONE) {
+      if (field.getAnnotation(NotLogged.class) == null) {
         // And is not opted out of
         if (isNotLoggable(field, field.asType())) {
           // And is not of a loggable type
@@ -126,7 +127,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     for (ExecutableElement method : methods) {
       var config = method.getAnnotation(Epilogue.class);
       // Field is explicitly tagged
-      if (config.importance() != Epilogue.Importance.NONE) {
+      if (method.getAnnotation(NotLogged.class) == null) {
         // And is not opted out of
         if (isNotLoggable(method, method.getReturnType())) {
           // And is not of a loggable type
@@ -321,7 +322,7 @@ public class AnnotationProcessor extends AbstractProcessor {
     }
 
     for (Element element : clazz.getEnclosedElements()) {
-      if (element.getAnnotation(Epilogue.class) instanceof Epilogue e && e.importance() == Epilogue.Importance.NONE) {
+      if (element.getAnnotation(NotLogged.class) != null) {
         // Explicitly opted out from, don't need to check
         continue;
       }

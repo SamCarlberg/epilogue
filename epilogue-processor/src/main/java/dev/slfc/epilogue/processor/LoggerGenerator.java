@@ -4,6 +4,7 @@ import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 
 import dev.slfc.epilogue.Epilogue;
+import dev.slfc.epilogue.NotLogged;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.EnumMap;
@@ -30,9 +31,7 @@ public class LoggerGenerator {
   }
 
   private static boolean isNotSkipped(Element e) {
-    var config = e.getAnnotation(Epilogue.class);
-    // Skipping must be done through the annotation, so no annotation means it's not skipped
-    return config == null || config.importance() != Epilogue.Importance.NONE;
+    return e.getAnnotation(NotLogged.class) == null;
   }
 
   public String writeLoggerFile(TypeElement clazz) throws IOException {

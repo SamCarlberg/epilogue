@@ -25,7 +25,7 @@ Annotate the classes you're interested in logging using the `@Epilogue` annotati
 
 By default, an `@Epilogue` annotation on a class will result in logging of every field of a loggable type and every public no-argument method returning a loggable type.
 
-Be aware that some sensors may have blocking reads that force your program to wait until data is received. If Epilogue is set up to call too many of those methods, you may see performance degrade, manifesting as loop time overrun messages in the driverstation. You can alleviate the issue by either marking the offending sensors or methods that read from those sensors as skipped with `@Epilogue(importance = NONE)` on the field or methods, or by periodically reading from those sensors in a subsystem or robot periodic method and only refer to those cached values in your calculations and in the log configuration.
+Be aware that some sensors may have blocking reads that force your program to wait until data is received. If Epilogue is set up to call too many of those methods, you may see performance degrade, manifesting as loop time overrun messages in the driverstation. You can alleviate the issue by either marking the offending sensors or methods that read from those sensors as skipped with `@NotLogged` on the field or methods, or by periodically reading from those sensors in a subsystem or robot periodic method and only refer to those cached values in your calculations and in the log configuration.
 
 ### Annotating
 
@@ -34,8 +34,8 @@ The only annotation you need to use is `@Epilogue`. It can be placed on classes 
 ```java
 @Epilogue(strategy = Strategy.OPT_IN)
 class Drivebase extends SubsystemBase {
-  @Epilogue(importance = NONE)
-  private Pose2d lastKnownPosition; // This field will never be logged
+  @NotLogged
+  private Pose2d lastKnownPosition; // This field will never be logged, even if the class strategy changes to opt-out
 
   @Epilogue(name = "Pose")
   Pose2d getPose(); // Logged under "<...>/Pose"
@@ -182,7 +182,6 @@ By default, all data fields are treated as having the `DEBUG` information level 
 
 | Information Level | Description                                                                                                             |
 |-------------------|-------------------------------------------------------------------------------------------------------------------------|
-| `NONE`            | Any data field flagged with `importance = NONE` will never be logged                                                    |
 | `DEBUG`           | Low-level information like raw sensor data that is useful for tuning controls and troubleshooting                       |
 | `INFO`            | Medium-level information that is useful for tracking higher-level concepts like subsystem states and a robot's position |
 | `CRITICAL`        | Critical information like hardware or mechanism faults that should always be included in logs                           |
@@ -202,8 +201,8 @@ class Robot extends TimedRobot {
   // Not explicitly configured. Therefore, per the class-level default, this is considered critical
   Measure<Velocity<Distance>> velocity();
 
-  // This field is utterly unimportant and should never be logged
-  @Epilogue(importance = Epilogue.Importance.NONE)
+  // This field should never be logged
+  @NotLogged
   private double ignored;
 
   @Override

@@ -843,7 +843,7 @@ class AnnotationProcessorTest {
       class HelloWorld {
         @Epilogue Map<String, String> notLoggableType;
         @Epilogue List rawType;
-        @Epilogue(importance = Epilogue.Importance.NONE) List skippedUnloggable;
+        @NotLogged List skippedUnloggable;
 
         @Epilogue
         private String privateMethod() { return ""; }

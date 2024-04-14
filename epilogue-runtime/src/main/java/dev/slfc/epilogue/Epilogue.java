@@ -50,11 +50,6 @@ public @interface Epilogue {
 
   enum Importance {
     /**
-     * The annotated element has no importance whatsoever and should never be logged.
-     */
-    NONE,
-
-    /**
      * Debug information. Useful for low-level information like raw sensor values.
      */
     DEBUG,
